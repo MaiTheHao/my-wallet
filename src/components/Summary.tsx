@@ -36,13 +36,6 @@ export function Summary() {
 						{balanceLoading ? '...' : formatAmount(totalExpense)}
 					</div>
 				</div>
-				<div className='flex flex-col items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-slate-200 py-6'>
-					<Wallet2 size={32} className='text-blue-500 mb-2' />
-					<div className='text-xs text-slate-500 font-medium'>Số Dư Hiện Tại</div>
-					<div className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-						{balanceLoading ? '...' : formatAmount(currentBalance)}
-					</div>
-				</div>
 			</div>
 			{balanceError && <div className='text-red-500 text-sm mt-2'>Lỗi lấy số dư: {balanceError}</div>}
 		</Section>
