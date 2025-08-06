@@ -39,4 +39,9 @@ export class TransactionApiService {
 		const res = await fetch(`${API_BASE_URL}/${api.transaction}?id=${id}`, { method: 'DELETE' });
 		return res.json();
 	}
+
+	static async getBalance(): Promise<TResponseData<Record<string, number>>> {
+		const res = await fetch(`${API_BASE_URL}/${api.transaction}/${api.transactionBalance}`);
+		return res.json();
+	}
 }

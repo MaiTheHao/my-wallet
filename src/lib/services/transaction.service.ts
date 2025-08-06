@@ -1,5 +1,5 @@
 import { TransactionRepository } from '../repositories/transaction.repository';
-import { TTransaction } from '../models/transaction.model';
+import { TransactionType, TTransaction } from '../models/transaction.model';
 import { ErrorFirst } from '@/lib/types/error-first.type';
 import { paginateService } from './paginate.service';
 
@@ -48,6 +48,26 @@ export class TransactionService {
 			]);
 			const pagination = paginateService.getPaginated({ data, total }, limit, page);
 			return [null, pagination];
+		} catch (error) {
+			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
+		}
+	}
+
+	async getBalance(): Promise<ErrorFirst<Record<TransactionType, number>>> {
+		try {
+			const transactions = await this.transactionRepo.getAll();
+			const typeTotals: Record<TransactionType, number> = {
+				[TransactionType.INCOME]: 0,
+				[TransactionType.EXPENSE]: 0,
+			};
+
+			for (const t of transactions) {
+				const type = t.type as TransactionType;
+				if (!Object.values(TransactionType).includes(type)) continue;
+				typeTotals[type] = (typeTotals[type] || 0) + t.amount;
+			}
+
+			return [null, { ...typeTotals }];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}

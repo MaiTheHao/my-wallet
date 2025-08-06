@@ -2,16 +2,14 @@
 import React from 'react';
 import { ArrowUpCircle, ArrowDownCircle, Wallet2 } from 'lucide-react';
 import { Section } from './Section';
-import { useTransactionContext } from '@/context/transaction-context/useTransactionContext';
+import { useBalanceContext } from '@/context/balance-context/useBalanceContext';
 
 export function Summary() {
-	const { transactions, loading } = useTransactionContext();
+	const { balance, balanceLoading, balanceError } = useBalanceContext();
 
-	const totalIncome = transactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-
-	const totalExpense = transactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-
-	const balance = totalIncome - totalExpense;
+	const totalIncome = balance?.income ?? 0;
+	const totalExpense = balance?.expense ?? 0;
+	const currentBalance = totalIncome - totalExpense;
 
 	const formatAmount = (amount: number) => amount.toLocaleString('vi-VN') + 'đ';
 
@@ -28,24 +26,25 @@ export function Summary() {
 					<ArrowUpCircle size={32} className='text-green-500 mb-2' />
 					<div className='text-xs text-slate-500 font-medium'>Tổng Thu Nhập</div>
 					<div className='text-2xl font-bold text-green-600'>
-						{loading ? '...' : formatAmount(totalIncome)}
+						{balanceLoading ? '...' : formatAmount(totalIncome)}
 					</div>
 				</div>
 				<div className='flex flex-col items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-slate-200 py-6'>
 					<ArrowDownCircle size={32} className='text-red-500 mb-2' />
 					<div className='text-xs text-slate-500 font-medium'>Tổng Chi Tiêu</div>
 					<div className='text-2xl font-bold text-red-600'>
-						{loading ? '...' : formatAmount(totalExpense)}
+						{balanceLoading ? '...' : formatAmount(totalExpense)}
 					</div>
 				</div>
-				{/* <div className='flex flex-col items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-slate-200 py-6'>
+				<div className='flex flex-col items-center justify-center gap-2 bg-white rounded-xl shadow-sm border border-slate-200 py-6'>
 					<Wallet2 size={32} className='text-blue-500 mb-2' />
 					<div className='text-xs text-slate-500 font-medium'>Số Dư Hiện Tại</div>
-					<div className={`text-2xl font-bold ${balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-						{loading ? '...' : formatAmount(balance)}
+					<div className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+						{balanceLoading ? '...' : formatAmount(currentBalance)}
 					</div>
-				</div> */}
+				</div>
 			</div>
+			{balanceError && <div className='text-red-500 text-sm mt-2'>Lỗi lấy số dư: {balanceError}</div>}
 		</Section>
 	);
 }
