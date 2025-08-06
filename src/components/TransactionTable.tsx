@@ -1,6 +1,5 @@
 import React from 'react';
 import { Transaction, PaginationInfo } from '@/types/transaction.types';
-import { TransactionFilter } from './TransactionFilter';
 import { Section } from './Section';
 import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -8,22 +7,18 @@ interface TransactionTableProps {
 	transactions: Transaction[];
 	pagination: PaginationInfo;
 	loading: boolean;
-	activeFilter: 'all' | 'income' | 'expense';
 	onRefresh: () => void;
 	onDelete: (id: string) => void;
 	onPageChange: (page: number) => void;
-	onFilterChange: (filter: 'all' | 'income' | 'expense') => void;
 }
 
 export function TransactionTable({
 	transactions,
 	pagination,
 	loading,
-	activeFilter,
 	onRefresh,
 	onDelete,
 	onPageChange,
-	onFilterChange,
 }: TransactionTableProps) {
 	const formatAmount = (amount: number, type: 'income' | 'expense') => {
 		const formatted = amount.toLocaleString('vi-VN');
@@ -61,9 +56,6 @@ export function TransactionTable({
 			}
 			className='mb-8'
 		>
-			{/* Transaction Filter */}
-			{/* <TransactionFilter activeFilter={activeFilter} onFilterChange={onFilterChange} /> */}
-
 			{loading ? (
 				<div className='flex flex-col items-center justify-center py-16 text-slate-400'>
 					<RefreshCw size={32} className='animate-spin mb-4 text-blue-500' />

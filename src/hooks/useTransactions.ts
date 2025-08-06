@@ -18,17 +18,11 @@ export function useTransactions() {
 	const [chatLoading, setChatLoading] = useState(false);
 	const [message, setMessage] = useState('');
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-	const [activeFilter, setActiveFilter] = useState<'all' | 'income' | 'expense'>('all');
 
-	const fetchTransactions = async (page = 1, filter: 'all' | 'income' | 'expense' = activeFilter) => {
+	const fetchTransactions = async (page = 1) => {
 		setLoading(true);
 		try {
 			let url = `/api/v1/transaction?page=${page}&limit=5`;
-
-			// Add filter to URL if not 'all'
-			if (filter !== 'all') {
-				url += `&type=${filter}`;
-			}
 
 			const res = await fetch(url);
 			const data = await res.json();
@@ -66,7 +60,7 @@ export function useTransactions() {
 			});
 
 			if (res.ok) {
-				fetchTransactions(pagination.page, activeFilter);
+				fetchTransactions(pagination.page);
 				setChatHistory((prev) => [...prev, { type: 'bot', content: '✅ Đã xóa giao dịch thành công!' }]);
 			} else {
 				setChatHistory((prev) => [...prev, { type: 'bot', content: '❌ Không thể xóa giao dịch' }]);
@@ -74,11 +68,6 @@ export function useTransactions() {
 		} catch (error) {
 			setChatHistory((prev) => [...prev, { type: 'bot', content: '❌ Lỗi khi xóa giao dịch' }]);
 		}
-	};
-
-	const handleFilterChange = (filter: 'all' | 'income' | 'expense') => {
-		setActiveFilter(filter);
-		fetchTransactions(1, filter); // Reset to page 1 when filter changes
 	};
 
 	const handleChatSubmit = async (e: React.FormEvent) => {
@@ -102,23 +91,8 @@ export function useTransactions() {
 			const data = await res.json();
 
 			if (res.ok) {
-				// Add bot response to chat history
 				setChatHistory((prev) => [...prev, { type: 'bot', content: data.reply }]);
-
-				// Refresh transactions if it was an add transaction request or balance check
-				if (
-					userMessage.toLowerCase().includes('thêm') ||
-					userMessage.toLowerCase().includes('chi') ||
-					userMessage.toLowerCase().includes('thu') ||
-					userMessage.toLowerCase().includes('mua') ||
-					userMessage.toLowerCase().includes('bán') ||
-					userMessage.toLowerCase().includes('nhận') ||
-					userMessage.toLowerCase().includes('lương') ||
-					userMessage.toLowerCase().includes('kiểm tra') ||
-					userMessage.toLowerCase().includes('số dư')
-				) {
-					fetchTransactions(pagination.page, activeFilter);
-				}
+				fetchTransactions(pagination.page);
 			} else {
 				const errorMsg = `❌ Lỗi: ${data.error}`;
 				setChatHistory((prev) => [...prev, { type: 'bot', content: errorMsg }]);
@@ -143,10 +117,8 @@ export function useTransactions() {
 		message,
 		setMessage,
 		chatHistory,
-		activeFilter,
 		fetchTransactions,
 		deleteTransaction,
 		handleChatSubmit,
-		handleFilterChange,
 	};
 }
