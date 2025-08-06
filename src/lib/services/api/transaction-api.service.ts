@@ -36,7 +36,7 @@ export class TransactionApiService {
 	}
 
 	static async delete(id: string): Promise<TResponseData<{ message: string; transaction?: Transaction }>> {
-		const res = await fetch(`${API_BASE_URL}/${api.transaction}?id=${id}`, { method: 'DELETE' });
+		const res = await fetch(`${API_BASE_URL}/${api.transaction}/${id}`, { method: 'DELETE' });
 		return res.json();
 	}
 
