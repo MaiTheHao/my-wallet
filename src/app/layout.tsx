@@ -1,5 +1,8 @@
 import './globals.css';
 import { NotebookPen } from 'lucide-react';
+import { metadata } from './root-metadata';
+
+export { metadata };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	return (
