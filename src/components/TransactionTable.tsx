@@ -92,7 +92,7 @@ export function TransactionTable() {
 							{transactions.map((transaction) => (
 								<tr
 									key={transaction._id}
-									className='hover:bg-slate-50/30 transition-colors duration-200'
+									className='hover:bg-blue-50/40 transition-colors duration-200 border-b border-slate-100'
 								>
 									<td className='px-6 py-4'>
 										<div
@@ -103,9 +103,9 @@ export function TransactionTable() {
 											}`}
 										>
 											{transaction.type === 'income' ? (
-												<ArrowUpCircle size={16} />
+												<ArrowUpCircle size={16} className='text-green-500' />
 											) : (
-												<ArrowDownCircle size={16} />
+												<ArrowDownCircle size={16} className='text-red-500' />
 											)}
 											{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
 										</div>
@@ -114,26 +114,48 @@ export function TransactionTable() {
 										<span className='font-medium text-slate-800'>{transaction.description}</span>
 									</td>
 									<td className='px-6 py-4'>
-										<span className='px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-slate-600'>
+										<span className='px-3 py-1 bg-slate-100 rounded-full text-sm text-gray-500 flex items-center gap-2 w-max'>
 											{transaction.category}
 										</span>
 									</td>
 									<td className='px-6 py-4 text-right'>
 										<span
-											className={`font-bold ${
-												transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+											className={`font-bold px-3 py-1 rounded-full flex items-center gap-2 ${
+												transaction.type === 'income'
+													? 'bg-green-50 text-green-700'
+													: 'bg-red-50 text-red-700'
 											}`}
 										>
+											{transaction.type === 'income' ? (
+												<ArrowUpCircle size={14} />
+											) : (
+												<ArrowDownCircle size={14} />
+											)}
 											{formatAmount(transaction.amount, transaction.type)}
 										</span>
 									</td>
 									<td className='px-6 py-4 text-slate-600 text-sm'>
-										{formatDate(transaction.createdAt)}
+										<span className='flex items-center gap-2'>
+											<span className='inline-block w-4 h-4 text-blue-400'>
+												{/* Icon đồng hồ */}
+												<svg width='16' height='16' fill='none' viewBox='0 0 24 24'>
+													<circle cx='12' cy='12' r='10' stroke='#60a5fa' strokeWidth='2' />
+													<path
+														d='M12 7v5l3 3'
+														stroke='#60a5fa'
+														strokeWidth='2'
+														strokeLinecap='round'
+														strokeLinejoin='round'
+													/>
+												</svg>
+											</span>
+											{formatDate(transaction.createdAt)}
+										</span>
 									</td>
 									<td className='px-6 py-4 text-center'>
 										<button
 											onClick={() => deleteTransaction(transaction._id)}
-											className='px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 mx-auto'
+											className='px-3 py-1 bg-red-100 hover:bg-red-400 hover:text-white text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 mx-auto shadow-sm'
 										>
 											<Trash2 size={14} />
 											Xóa
@@ -149,24 +171,27 @@ export function TransactionTable() {
 						{transactions.map((transaction) => (
 							<div
 								key={transaction._id}
-								className='bg-white rounded-lg shadow-sm border border-slate-200 p-4'
+								className='bg-white rounded-xl shadow-md border border-slate-200 p-4 hover:shadow-lg transition-shadow duration-200'
 							>
 								<div className='flex items-center justify-between mb-3'>
 									<div
-										className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+										className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold ${
 											transaction.type === 'income'
 												? 'bg-green-100 text-green-700'
 												: 'bg-red-100 text-red-700'
 										}`}
 									>
 										{transaction.type === 'income' ? (
-											<ArrowUpCircle size={12} />
+											<ArrowUpCircle size={14} />
 										) : (
-											<ArrowDownCircle size={12} />
+											<ArrowDownCircle size={14} />
 										)}
 										{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
 									</div>
-									<span className='px-2 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600'>
+									<span className='px-2 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 flex items-center gap-2'>
+										<span className='inline-block w-4 h-4 rounded-full bg-blue-200 text-blue-600 flex items-center justify-center text-xs font-bold'>
+											{transaction.category[0].toUpperCase()}
+										</span>
 										{transaction.category}
 									</span>
 								</div>
@@ -174,18 +199,39 @@ export function TransactionTable() {
 									<h4 className='font-medium text-slate-800'>{transaction.description}</h4>
 								</div>
 								<div className='flex items-center justify-between mb-3'>
-									<span className='text-slate-500 text-xs'>{formatDate(transaction.createdAt)}</span>
+									<span className='text-slate-500 text-xs flex items-center gap-2'>
+										<span className='inline-block w-4 h-4 text-blue-400'>
+											<svg width='16' height='16' fill='none' viewBox='0 0 24 24'>
+												<circle cx='12' cy='12' r='10' stroke='#60a5fa' strokeWidth='2' />
+												<path
+													d='M12 7v5l3 3'
+													stroke='#60a5fa'
+													strokeWidth='2'
+													strokeLinecap='round'
+													strokeLinejoin='round'
+												/>
+											</svg>
+										</span>
+										{formatDate(transaction.createdAt)}
+									</span>
 									<span
-										className={`font-bold ${
-											transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+										className={`font-bold px-3 py-1 rounded-full flex items-center gap-2 ${
+											transaction.type === 'income'
+												? 'bg-green-50 text-green-700'
+												: 'bg-red-50 text-red-700'
 										}`}
 									>
+										{transaction.type === 'income' ? (
+											<ArrowUpCircle size={14} />
+										) : (
+											<ArrowDownCircle size={14} />
+										)}
 										{formatAmount(transaction.amount, transaction.type)}
 									</span>
 								</div>
 								<button
 									onClick={() => deleteTransaction(transaction._id)}
-									className='w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1'
+									className='w-full px-3 py-2 bg-red-100 hover:bg-red-400 hover:text-white text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1 shadow-sm'
 								>
 									<Trash2 size={14} />
 									Xóa
