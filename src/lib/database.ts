@@ -7,7 +7,8 @@ if (!MONGODB_URI) {
 }
 
 export async function connectToDatabase() {
-	if (mongoose.connection.readyState === 1) {
+	if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+		// 1 = connected, 2 = connecting
 		return mongoose;
 	}
 	await mongoose.connect(MONGODB_URI, {
