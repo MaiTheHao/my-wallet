@@ -1,5 +1,5 @@
 import { Transaction, TTransaction } from '../models/transaction.model';
-import { connectToDatabase } from '../database';
+import dbConnect from '../database';
 import { FilterQuery } from 'mongoose';
 
 export class TransactionRepository {
@@ -15,7 +15,7 @@ export class TransactionRepository {
 	}
 
 	async create(data: Omit<TTransaction, '_id' | 'createdAt' | 'updatedAt'>) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const transaction = new Transaction(data);
 		return await transaction.save();
 	}
@@ -26,7 +26,7 @@ export class TransactionRepository {
 		sort?: Record<string, 1 | -1>,
 		projection?: Record<string, 0 | 1>
 	) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const query = Transaction.findById(id);
 		if (filter) query.where(filter);
 		if (sort) query.sort(sort);
@@ -41,7 +41,7 @@ export class TransactionRepository {
 		page: number = 1,
 		projection?: Record<string, 0 | 1>
 	) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const query = Transaction.find(filter || {});
 		if (sort) query.sort(sort);
 		if (projection) query.select(projection);
@@ -54,7 +54,7 @@ export class TransactionRepository {
 		sort?: Record<string, 1 | -1>,
 		projection?: Record<string, 0 | 1>
 	) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const query = Transaction.find(filter || {});
 		if (sort) query.sort(sort);
 		if (projection) query.select(projection);
@@ -68,7 +68,7 @@ export class TransactionRepository {
 		sort?: Record<string, 1 | -1>,
 		projection?: Record<string, 0 | 1>
 	) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const query = Transaction.findByIdAndUpdate(id, data, { new: true });
 		if (filter) query.where(filter);
 		if (sort) query.sort(sort);
@@ -82,11 +82,20 @@ export class TransactionRepository {
 		sort?: Record<string, 1 | -1>,
 		projection?: Record<string, 0 | 1>
 	) {
-		await connectToDatabase();
+		await this.connectToDatabase();
 		const query = Transaction.findByIdAndDelete(id);
 		if (filter) query.where(filter);
 		if (sort) query.sort(sort);
 		if (projection) query.select(projection);
 		return await query.exec();
+	}
+
+	private async connectToDatabase() {
+		try {
+			await dbConnect();
+		} catch (error) {
+			console.error('Database connection failed:', error);
+			throw new Error('Database connection failed');
+		}
 	}
 }
