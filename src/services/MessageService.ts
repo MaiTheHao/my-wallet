@@ -23,20 +23,7 @@ export class MessageService {
 			const [topicError, topic] = await this.aiService.getTopic(prompt, options);
 			if (topicError) return [topicError, null];
 
-			switch (topic) {
-				case Topics.CHECK_BALANCE:
-					// Lấy tổng số dư
-					const [balanceError, balanceData] = await this.transactionService.getTotalBalance();
-					if (balanceError) return [balanceError, null];
-
-					const balanceMessage = [
-						`💰 **Tổng thu nhập**: ${balanceData.income.toLocaleString('vi-VN')}đ`,
-						`💸 **Tổng chi tiêu**: ${balanceData.expense.toLocaleString('vi-VN')}đ`,
-						`📊 **Số dư hiện tại**: ${balanceData.balance.toLocaleString('vi-VN')}đ`,
-					].join('\n');
-
-					return [null, balanceMessage];
-
+			switch (topic?.topic) {
 				case Topics.ADD_TRANSACTION:
 					// Xử lý thêm giao dịch
 					const [transactionError, transactionData] = await this.aiService.addTransaction(prompt, options);
@@ -48,14 +35,15 @@ export class MessageService {
 					if (createError) return [createError, null];
 
 					const typeText = transactionData.type === 'income' ? 'Thu nhập' : 'Chi tiêu';
-					const successMessage = [
-						`✅ **Đã thêm ${typeText.toLowerCase()}**`,
-						`💰 **Số tiền**: ${transactionData.amount.toLocaleString('vi-VN')}đ`,
-						`📝 **Mô tả**: ${transactionData.description}`,
-						`🏷️ **Danh mục**: ${transactionData.category || 'Khác'}`,
-					].join('\n');
+					const successMessage = `✅ Đã thêm ${typeText.toLowerCase()}: ${transactionData.amount.toLocaleString(
+						'vi-VN'
+					)}đ (${transactionData.category || 'Khác'}) - ${transactionData.description}`;
 
 					return [null, successMessage];
+
+				case Topics.RE_ASK:
+					// Yêu cầu người dùng cung cấp thêm thông tin
+					return [null, topic.description || 'Xin vui lòng cung cấp thêm thông tin để tôi có thể giúp bạn.'];
 
 				default:
 					return [

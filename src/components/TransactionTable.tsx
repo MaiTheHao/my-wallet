@@ -1,6 +1,8 @@
 import React from 'react';
 import { Transaction, PaginationInfo } from '@/types/transaction.types';
 import { TransactionFilter } from './TransactionFilter';
+import { Section } from './Section';
+import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TransactionTableProps {
 	transactions: Transaction[];
@@ -39,38 +41,32 @@ export function TransactionTable({
 	};
 
 	return (
-		<div className='bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/30 overflow-hidden'>
-			<div className='p-8 border-b border-slate-200/50'>
-				<div className='flex flex-col gap-6'>
-					<div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-						<div className='flex items-center gap-3'>
-							<div className='w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center'>
-								<span className='text-white text-lg font-bold'>📋</span>
-							</div>
-							<h2 className='text-2xl font-bold text-slate-800'>Lịch Sử Giao Dịch</h2>
-						</div>
-						<div className='flex items-center gap-4'>
-							<button
-								onClick={onRefresh}
-								className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-all duration-200'
-								disabled={loading}
-							>
-								{loading ? 'Đang tải...' : 'Làm mới'}
-							</button>
-							<span className='px-4 py-2 bg-slate-100 rounded-full text-sm font-semibold text-slate-600'>
-								{pagination.total} giao dịch
-							</span>
-						</div>
-					</div>
-
-					{/* Transaction Filter */}
-					{/* <TransactionFilter activeFilter={activeFilter} onFilterChange={onFilterChange} /> */}
-				</div>
-			</div>
+		<Section
+			icon={<span className='text-white text-lg font-bold'>📋</span>}
+			title='Lịch Sử Giao Dịch'
+			headerRight={
+				<>
+					<button
+						onClick={onRefresh}
+						className='px-4 py-2 bg-blue-500 hover:bg-blue-600 hover:cursor-pointer text-white rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2'
+						disabled={loading}
+					>
+						<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+						{loading ? 'Đang tải...' : 'Làm mới'}
+					</button>
+					<span className='px-4 py-2 bg-slate-100 rounded-full text-sm font-semibold text-slate-600'>
+						{pagination.total} giao dịch
+					</span>
+				</>
+			}
+			className='mb-8'
+		>
+			{/* Transaction Filter */}
+			{/* <TransactionFilter activeFilter={activeFilter} onFilterChange={onFilterChange} /> */}
 
 			{loading ? (
 				<div className='flex flex-col items-center justify-center py-16 text-slate-400'>
-					<div className='w-8 h-8 border-3 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-4'></div>
+					<RefreshCw size={32} className='animate-spin mb-4 text-blue-500' />
 					<p className='text-lg font-medium'>Đang tải dữ liệu...</p>
 				</div>
 			) : transactions.length === 0 ? (
@@ -83,7 +79,8 @@ export function TransactionTable({
 				</div>
 			) : (
 				<div className='overflow-x-auto'>
-					<table className='w-full'>
+					{/* Desktop Table */}
+					<table className='w-full hidden md:table'>
 						<thead className='bg-slate-50/50'>
 							<tr>
 								<th className='px-6 py-4 text-left text-sm font-semibold text-slate-600'>Loại</th>
@@ -104,11 +101,15 @@ export function TransactionTable({
 										<div
 											className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
 												transaction.type === 'income'
-													? 'bg-green-100 text-green-700'
-													: 'bg-red-100 text-red-700'
+													? 'bg-green-100 text-green-600'
+													: 'bg-red-100 text-red-600'
 											}`}
 										>
-											<span>{transaction.type === 'income' ? '📈' : '📉'}</span>
+											{transaction.type === 'income' ? (
+												<ArrowUpCircle size={16} />
+											) : (
+												<ArrowDownCircle size={16} />
+											)}
 											{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
 										</div>
 									</td>
@@ -135,8 +136,9 @@ export function TransactionTable({
 									<td className='px-6 py-4 text-center'>
 										<button
 											onClick={() => onDelete(transaction._id)}
-											className='px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200'
+											className='px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 mx-auto'
 										>
+											<Trash2 size={14} />
 											Xóa
 										</button>
 									</td>
@@ -144,35 +146,87 @@ export function TransactionTable({
 							))}
 						</tbody>
 					</table>
+
+					{/* Mobile Cards */}
+					<div className='grid grid-cols-1 gap-4 md:hidden'>
+						{transactions.map((transaction) => (
+							<div
+								key={transaction._id}
+								className='bg-white rounded-lg shadow-sm border border-slate-200 p-4'
+							>
+								<div className='flex items-center justify-between mb-3'>
+									<div
+										className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+											transaction.type === 'income'
+												? 'bg-green-100 text-green-700'
+												: 'bg-red-100 text-red-700'
+										}`}
+									>
+										{transaction.type === 'income' ? (
+											<ArrowUpCircle size={12} />
+										) : (
+											<ArrowDownCircle size={12} />
+										)}
+										{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
+									</div>
+									<span className='px-2 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600'>
+										{transaction.category}
+									</span>
+								</div>
+								<div className='mb-2'>
+									<h4 className='font-medium text-slate-800'>{transaction.description}</h4>
+								</div>
+								<div className='flex items-center justify-between mb-3'>
+									<span className='text-slate-500 text-xs'>{formatDate(transaction.createdAt)}</span>
+									<span
+										className={`font-bold ${
+											transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+										}`}
+									>
+										{formatAmount(transaction.amount, transaction.type)}
+									</span>
+								</div>
+								<button
+									onClick={() => onDelete(transaction._id)}
+									className='w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1'
+								>
+									<Trash2 size={14} />
+									Xóa
+								</button>
+							</div>
+						))}
+					</div>
 				</div>
 			)}
 
 			{/* Pagination */}
 			{pagination.totalPages > 1 && (
-				<div className='px-8 py-6 bg-slate-50/30 border-t border-slate-200/50'>
+				<div className='px-4 md:px-8 py-4 md:py-6 bg-slate-50/30 border-t border-slate-200/50'>
 					<div className='flex items-center justify-between'>
-						<p className='text-sm text-slate-600'>
+						<p className='text-xs md:text-sm text-slate-600'>
 							Trang {pagination.page} / {pagination.totalPages}
 						</p>
 						<div className='flex gap-2'>
 							<button
 								onClick={() => onPageChange(pagination.page - 1)}
 								disabled={pagination.page <= 1}
-								className='px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+								className='px-3 md:px-4 py-1 md:py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1'
 							>
-								Trước
+								<ChevronLeft size={16} />
+								<span className='hidden md:inline'>Trước</span>
 							</button>
 							<button
 								onClick={() => onPageChange(pagination.page + 1)}
 								disabled={pagination.page >= pagination.totalPages}
-								className='px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+								className='px-3 md:px-4 py-1 md:py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1'
 							>
-								Sau
+								<span className='hidden md:inline'>Sau</span>
+								<ChevronRight size={16} />
 							</button>
 						</div>
 					</div>
 				</div>
 			)}
-		</div>
+		</Section>
 	);
 }

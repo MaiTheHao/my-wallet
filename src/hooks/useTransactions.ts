@@ -5,7 +5,7 @@ export function useTransactions() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [pagination, setPagination] = useState<PaginationInfo>({
 		page: 1,
-		limit: 10,
+		limit: 5,
 		total: 0,
 		totalPages: 0,
 	});
@@ -23,7 +23,7 @@ export function useTransactions() {
 	const fetchTransactions = async (page = 1, filter: 'all' | 'income' | 'expense' = activeFilter) => {
 		setLoading(true);
 		try {
-			let url = `/api/v1/transaction?page=${page}&limit=10`;
+			let url = `/api/v1/transaction?page=${page}&limit=5`;
 
 			// Add filter to URL if not 'all'
 			if (filter !== 'all') {

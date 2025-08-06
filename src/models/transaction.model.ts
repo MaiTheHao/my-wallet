@@ -1,5 +1,18 @@
 import { Schema, model, InferSchemaType, models } from 'mongoose';
 
+export enum TransactionType {
+	INCOME = 'income',
+	EXPENSE = 'expense',
+}
+
+export enum TransactionCategory {
+	AN_UONG = 'Ăn uống',
+	DI_LAI = 'Đi lại',
+	DICH_VU = 'Dịch vụ',
+	GIAI_TRI = 'Giải trí',
+	KHAC = 'Khác',
+}
+
 const transactionSchema = new Schema(
 	{
 		amount: {
@@ -12,12 +25,13 @@ const transactionSchema = new Schema(
 		},
 		type: {
 			type: String,
-			enum: ['income', 'expense'],
+			enum: Object.values(TransactionType),
 			required: true,
 		},
 		category: {
 			type: String,
-			default: 'Khác',
+			enum: Object.values(TransactionCategory),
+			default: TransactionCategory.KHAC,
 		},
 	},
 	{

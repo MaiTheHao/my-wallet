@@ -1,12 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
 import { TopicDescriptions, Topics } from '@/context/topics';
-import {
-	ADD_TRANSACTION_RESPONSE_JSON_SCHEMA,
-	GET_TOPIC_RESPONSE_JSON_SCHEMA,
-	TAddTransactionResponse,
-	TGetTopicResponse,
-} from '@/context/schemas';
+import { ADD_TRANSACTION_RESPONSE_JSON_SCHEMA, GET_TOPIC_RESPONSE_JSON_SCHEMA } from '@/context/schemas';
 import { ErrorFirst } from '@/types/error-first.type';
+import { TTransaction } from '@/models/transaction.model';
 
 export class AIService {
 	private static instance: AIService | null = null;
@@ -23,7 +19,15 @@ export class AIService {
 		return AIService.instance;
 	}
 
-	async getTopic(prompt: string, options?: any): Promise<ErrorFirst<TGetTopicResponse['topic']>> {
+	async getTopic(
+		prompt: string,
+		options?: any
+	): Promise<
+		ErrorFirst<{
+			topic: Topics;
+			description: string;
+		}>
+	> {
 		try {
 			const contents = [
 				'Dựa trên mô tả sau, hãy chọn một topic phù hợp nhất trong số các topic sau:',
@@ -46,8 +50,8 @@ export class AIService {
 			if (!response.text) return [new Error('Không nhận được phản hồi'), null];
 
 			try {
-				const jsonResponse: TGetTopicResponse = JSON.parse(response.text);
-				return [null, jsonResponse.topic];
+				const jsonResponse = JSON.parse(response.text);
+				return [null, jsonResponse];
 			} catch {
 				return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
 			}
@@ -56,7 +60,7 @@ export class AIService {
 		}
 	}
 
-	async addTransaction(prompt: string, options?: any): Promise<ErrorFirst<TAddTransactionResponse>> {
+	async addTransaction(prompt: string, options?: any): Promise<ErrorFirst<TTransaction>> {
 		try {
 			const response = await this.genAI.models.generateContent({
 				model: this.model,
@@ -80,13 +84,9 @@ export class AIService {
 			if (!response.text) return [new Error('Không nhận được phản hồi'), null];
 
 			try {
-				const jsonResponse: TAddTransactionResponse = JSON.parse(response.text);
+				const jsonResponse: TTransaction = JSON.parse(response.text);
 				if (!jsonResponse || typeof jsonResponse !== 'object') {
 					return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
-				}
-				// Đảm bảo có category mặc định
-				if (!jsonResponse.category) {
-					jsonResponse.category = 'Khác';
 				}
 				return [null, jsonResponse];
 			} catch {

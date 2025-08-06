@@ -3,9 +3,9 @@ import { TransactionService } from '@/services/TransactionService';
 
 const transactionService = TransactionService.getInstance();
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const id = params.id;
+		const { id } = await params;
 
 		if (!id) {
 			return NextResponse.json({ error: 'ID là bắt buộc' }, { status: 400 });

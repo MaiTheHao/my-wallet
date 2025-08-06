@@ -1,4 +1,5 @@
 import { Type } from '@google/genai';
+import { TransactionType, TransactionCategory } from '../models/transaction.model';
 import { Topics } from './topics';
 
 export const ADD_TRANSACTION_RESPONSE_JSON_SCHEMA = {
@@ -14,22 +15,16 @@ export const ADD_TRANSACTION_RESPONSE_JSON_SCHEMA = {
 		},
 		type: {
 			type: Type.STRING,
-			enum: ['income', 'expense'],
+			enum: Object.values(TransactionType),
 			description: 'Loại giao dịch: income (thu nhập) hoặc expense (chi tiêu)',
 		},
 		category: {
 			type: Type.STRING,
-			description: 'Danh mục giao dịch (ví dụ: Ăn uống, Xăng xe, Lương)',
+			enum: Object.values(TransactionCategory),
+			description: 'Danh mục giao dịch',
 		},
 	},
 	required: ['amount', 'description', 'type'],
-};
-
-export type TAddTransactionResponse = {
-	amount: number;
-	description: string;
-	type: 'income' | 'expense';
-	category?: string;
 };
 
 export const GET_TOPIC_RESPONSE_JSON_SCHEMA = {
@@ -37,11 +32,11 @@ export const GET_TOPIC_RESPONSE_JSON_SCHEMA = {
 	properties: {
 		topic: {
 			type: Type.STRING,
-			enum: [...Object.values(Topics), 'unknown'],
+			enum: Object.values(Topics),
+		},
+		description: {
+			type: Type.STRING,
 		},
 	},
-	required: ['topic'],
-};
-export type TGetTopicResponse = {
-	topic: Topics | 'unknown';
+	required: ['topic', 'description'],
 };

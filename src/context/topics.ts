@@ -1,11 +1,12 @@
 export enum Topics {
-	CHECK_BALANCE = 'check-balance',
 	ADD_TRANSACTION = 'add-transaction',
-	DELETE_TRANSACTION = 'delete-transaction',
+	RE_ASK = 're-ask',
+	UNKNOWN = 'unknown',
 }
 
 export const TopicDescriptions: Record<Topics, string> = {
-	[Topics.CHECK_BALANCE]: 'Kiểm tra số dư, tổng thu chi',
-	[Topics.ADD_TRANSACTION]: 'Thêm giao dịch thu hoặc chi',
-	[Topics.DELETE_TRANSACTION]: 'Xóa giao dịch',
+	[Topics.ADD_TRANSACTION]:
+		'Thêm giao dịch thu hoặc chi. Nếu thiếu thông tin, hãy yêu cầu người dùng cung cấp đầy đủ bằng topic "re-ask".',
+	[Topics.RE_ASK]: 'Yêu cầu người dùng cung cấp thêm thông tin nếu cần thiết.',
+	[Topics.UNKNOWN]: 'Chủ đề không xác định',
 };
