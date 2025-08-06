@@ -1,0 +1,178 @@
+import React from 'react';
+import { Transaction, PaginationInfo } from '@/types/transaction.types';
+import { TransactionFilter } from './TransactionFilter';
+
+interface TransactionTableProps {
+	transactions: Transaction[];
+	pagination: PaginationInfo;
+	loading: boolean;
+	activeFilter: 'all' | 'income' | 'expense';
+	onRefresh: () => void;
+	onDelete: (id: string) => void;
+	onPageChange: (page: number) => void;
+	onFilterChange: (filter: 'all' | 'income' | 'expense') => void;
+}
+
+export function TransactionTable({
+	transactions,
+	pagination,
+	loading,
+	activeFilter,
+	onRefresh,
+	onDelete,
+	onPageChange,
+	onFilterChange,
+}: TransactionTableProps) {
+	const formatAmount = (amount: number, type: 'income' | 'expense') => {
+		const formatted = amount.toLocaleString('vi-VN');
+		return type === 'income' ? `+${formatted}đ` : `-${formatted}đ`;
+	};
+
+	const formatDate = (dateString: string) => {
+		return new Date(dateString).toLocaleDateString('vi-VN', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+	};
+
+	return (
+		<div className='bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/30 overflow-hidden'>
+			<div className='p-8 border-b border-slate-200/50'>
+				<div className='flex flex-col gap-6'>
+					<div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+						<div className='flex items-center gap-3'>
+							<div className='w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center'>
+								<span className='text-white text-lg font-bold'>📋</span>
+							</div>
+							<h2 className='text-2xl font-bold text-slate-800'>Lịch Sử Giao Dịch</h2>
+						</div>
+						<div className='flex items-center gap-4'>
+							<button
+								onClick={onRefresh}
+								className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-all duration-200'
+								disabled={loading}
+							>
+								{loading ? 'Đang tải...' : 'Làm mới'}
+							</button>
+							<span className='px-4 py-2 bg-slate-100 rounded-full text-sm font-semibold text-slate-600'>
+								{pagination.total} giao dịch
+							</span>
+						</div>
+					</div>
+
+					{/* Transaction Filter */}
+					{/* <TransactionFilter activeFilter={activeFilter} onFilterChange={onFilterChange} /> */}
+				</div>
+			</div>
+
+			{loading ? (
+				<div className='flex flex-col items-center justify-center py-16 text-slate-400'>
+					<div className='w-8 h-8 border-3 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-4'></div>
+					<p className='text-lg font-medium'>Đang tải dữ liệu...</p>
+				</div>
+			) : transactions.length === 0 ? (
+				<div className='text-center py-16 text-slate-400'>
+					<div className='w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+						<span className='text-2xl'>📝</span>
+					</div>
+					<p className='text-lg font-medium'>Chưa có giao dịch nào</p>
+					<p className='text-sm'>Hãy bắt đầu ghi chép chi tiêu của bạn!</p>
+				</div>
+			) : (
+				<div className='overflow-x-auto'>
+					<table className='w-full'>
+						<thead className='bg-slate-50/50'>
+							<tr>
+								<th className='px-6 py-4 text-left text-sm font-semibold text-slate-600'>Loại</th>
+								<th className='px-6 py-4 text-left text-sm font-semibold text-slate-600'>Mô tả</th>
+								<th className='px-6 py-4 text-left text-sm font-semibold text-slate-600'>Danh mục</th>
+								<th className='px-6 py-4 text-right text-sm font-semibold text-slate-600'>Số tiền</th>
+								<th className='px-6 py-4 text-left text-sm font-semibold text-slate-600'>Thời gian</th>
+								<th className='px-6 py-4 text-center text-sm font-semibold text-slate-600'>Thao tác</th>
+							</tr>
+						</thead>
+						<tbody className='divide-y divide-slate-200/50'>
+							{transactions.map((transaction) => (
+								<tr
+									key={transaction._id}
+									className='hover:bg-slate-50/30 transition-colors duration-200'
+								>
+									<td className='px-6 py-4'>
+										<div
+											className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+												transaction.type === 'income'
+													? 'bg-green-100 text-green-700'
+													: 'bg-red-100 text-red-700'
+											}`}
+										>
+											<span>{transaction.type === 'income' ? '📈' : '📉'}</span>
+											{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
+										</div>
+									</td>
+									<td className='px-6 py-4'>
+										<span className='font-medium text-slate-800'>{transaction.description}</span>
+									</td>
+									<td className='px-6 py-4'>
+										<span className='px-3 py-1 bg-slate-100 rounded-full text-sm font-medium text-slate-600'>
+											{transaction.category}
+										</span>
+									</td>
+									<td className='px-6 py-4 text-right'>
+										<span
+											className={`font-bold ${
+												transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+											}`}
+										>
+											{formatAmount(transaction.amount, transaction.type)}
+										</span>
+									</td>
+									<td className='px-6 py-4 text-slate-600 text-sm'>
+										{formatDate(transaction.createdAt)}
+									</td>
+									<td className='px-6 py-4 text-center'>
+										<button
+											onClick={() => onDelete(transaction._id)}
+											className='px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200'
+										>
+											Xóa
+										</button>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+
+			{/* Pagination */}
+			{pagination.totalPages > 1 && (
+				<div className='px-8 py-6 bg-slate-50/30 border-t border-slate-200/50'>
+					<div className='flex items-center justify-between'>
+						<p className='text-sm text-slate-600'>
+							Trang {pagination.page} / {pagination.totalPages}
+						</p>
+						<div className='flex gap-2'>
+							<button
+								onClick={() => onPageChange(pagination.page - 1)}
+								disabled={pagination.page <= 1}
+								className='px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+							>
+								Trước
+							</button>
+							<button
+								onClick={() => onPageChange(pagination.page + 1)}
+								disabled={pagination.page >= pagination.totalPages}
+								className='px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+							>
+								Sau
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+}
