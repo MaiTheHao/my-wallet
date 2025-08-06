@@ -7,11 +7,13 @@ interface SectionProps {
 	children: React.ReactNode;
 	headerRight?: React.ReactNode;
 	className?: string;
+	id?: string;
 }
 
-export function Section({ icon, title, subtitle, children, headerRight, className = '' }: SectionProps) {
+export function Section({ icon, title, subtitle, children, headerRight, className = '', id }: SectionProps) {
 	return (
-		<div
+		<section
+			id={id}
 			className={`bg-white/70 backdrop-blur-sm md:rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/30 overflow-hidden ${className}`}
 		>
 			<div className='p-8 border-b border-slate-200/50'>
@@ -33,6 +35,6 @@ export function Section({ icon, title, subtitle, children, headerRight, classNam
 				</div>
 			</div>
 			{children}
-		</div>
+		</section>
 	);
 }

@@ -2,12 +2,12 @@
 import React from 'react';
 import { Section } from './Section';
 import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactionContext } from '@/context/transaction-context/useTransactionContext';
 import { useEventEmitter } from '@/hooks/useEventEmitter';
 import { CLIENT_EVENTS } from '@/lib/const/events';
 
 export function TransactionTable() {
-	const { transactions, pagination, loading, fetchTransactions, deleteTransaction } = useTransactions();
+	const { transactions, pagination, loading, fetchTransactions, deleteTransaction } = useTransactionContext();
 	const eventEmitter = useEventEmitter();
 
 	React.useEffect(() => {
@@ -44,6 +44,7 @@ export function TransactionTable() {
 		<Section
 			icon={<span className='text-white text-lg font-bold'>📋</span>}
 			title='Lịch Sử Giao Dịch'
+			id='transaction-table'
 			headerRight={
 				<>
 					<button
@@ -114,7 +115,7 @@ export function TransactionTable() {
 										<span className='font-medium text-slate-800'>{transaction.description}</span>
 									</td>
 									<td className='px-6 py-4'>
-										<span className='px-3 py-1 bg-slate-100 rounded-full text-sm text-gray-500 flex items-center gap-2 w-max'>
+										<span className='px-3 py-1 bg-slate-100 rounded-full text-sm text-gray-600 flex items-center gap-2 w-max'>
 											{transaction.category}
 										</span>
 									</td>
@@ -189,9 +190,6 @@ export function TransactionTable() {
 										{transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
 									</div>
 									<span className='px-2 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 flex items-center gap-2'>
-										<span className='inline-block w-4 h-4 rounded-full bg-blue-200 text-blue-600 flex items-center justify-center text-xs font-bold'>
-											{transaction.category[0].toUpperCase()}
-										</span>
 										{transaction.category}
 									</span>
 								</div>

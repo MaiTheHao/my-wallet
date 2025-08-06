@@ -12,6 +12,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
 			icon={<Bot className='text-white' size={28} />}
 			title='Trợ Lý AI'
 			subtitle='Nhập giao dịch bằng ngôn ngữ tự nhiên'
+			id='chat-interface'
 			className=''
 		>
 			{/* Chat History */}
