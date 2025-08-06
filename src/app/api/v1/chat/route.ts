@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { MessageService } from '@/services/MessageService';
+import { NextRequest } from 'next/server';
+import { MessageService } from '@/lib/services/message.service';
+import { ResponseService } from '@/lib/services/response.service';
 
 export async function POST(req: NextRequest) {
 	try {
@@ -10,41 +11,11 @@ export async function POST(req: NextRequest) {
 		const [error, reply] = await messageService.processMessage(message);
 
 		if (error) {
-			return NextResponse.json(
-				{
-					error: error.message,
-				},
-				{
-					status: 500,
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			return ResponseService.internalError(error.message);
 		}
 
-		return NextResponse.json(
-			{
-				reply,
-			},
-			{
-				status: 200,
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
+		return ResponseService.success({ reply });
 	} catch (error: any) {
-		return NextResponse.json(
-			{
-				error: error?.message || 'Đã xảy ra lỗi',
-			},
-			{
-				status: 500,
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
+		return ResponseService.internalError(error?.message || 'Đã xảy ra lỗi');
 	}
 }

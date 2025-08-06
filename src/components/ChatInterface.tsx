@@ -1,17 +1,12 @@
+'use client';
 import React from 'react';
-import { ChatMessage } from '@/types/transaction.types';
 import { Bot, MessageCircle } from 'lucide-react';
 import { Section } from './Section';
+import { useChat } from '@/hooks/useChat';
 
-interface ChatInterfaceProps {
-	message: string;
-	setMessage: (message: string) => void;
-	chatHistory: ChatMessage[];
-	chatLoading: boolean;
-	onSubmit: (e: React.FormEvent) => void;
-}
+export const ChatInterface = React.memo(function ChatInterface() {
+	const { message, setMessage, chatHistory, chatLoading, handleChatSubmit } = useChat();
 
-export function ChatInterface({ message, setMessage, chatHistory, chatLoading, onSubmit }: ChatInterfaceProps) {
 	return (
 		<Section
 			icon={<Bot className='text-white' size={28} />}
@@ -60,7 +55,7 @@ export function ChatInterface({ message, setMessage, chatHistory, chatLoading, o
 			</div>
 
 			{/* Chat Input */}
-			<form onSubmit={onSubmit} className='flex gap-3 pb-4 pl-2 pr-2 sm:pl-4 sm:pr-4'>
+			<form onSubmit={handleChatSubmit} className='flex gap-3 pb-4 pl-2 pr-2 sm:pl-4 sm:pr-4'>
 				<input
 					className='flex-1 px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 text-slate-700'
 					value={message}
@@ -82,4 +77,4 @@ export function ChatInterface({ message, setMessage, chatHistory, chatLoading, o
 			</form>
 		</Section>
 	);
-}
+});

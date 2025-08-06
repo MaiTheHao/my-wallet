@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { TransactionService } from '@/services/TransactionService';
+import { NextRequest } from 'next/server';
+import { TransactionService } from '@/lib/services/transaction.service';
+import { ResponseService } from '@/lib/services/response.service';
 
 const transactionService = TransactionService.getInstance();
 
@@ -8,32 +9,25 @@ export async function GET(request: NextRequest) {
 	const id = searchParams.get('id');
 	const page = parseInt(searchParams.get('page') || '1');
 	const limit = parseInt(searchParams.get('limit') || '10');
-	const type = searchParams.get('type'); // 'income' or 'expense' or null for all
-
 	try {
 		if (id) {
 			const [error, transaction] = await transactionService.getById(id);
 			if (error) {
-				return NextResponse.json({ error: error.message }, { status: 404 });
+				return ResponseService.notFound(error.message);
 			}
-			return NextResponse.json({ transaction });
+			return ResponseService.success({ transaction });
 		}
 
-		// Build filter object
 		const filter: any = {};
-		if (type && (type === 'income' || type === 'expense')) {
-			filter.type = type;
-		}
 
-		// Use paginated service method with filter
-		const [error, result] = await transactionService.getPaginated(filter, page, limit);
+		const [error, result] = await transactionService.getList(filter, page, limit);
 		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
+			return ResponseService.internalError(error.message);
 		}
 
-		return NextResponse.json(result);
+		return ResponseService.success(result);
 	} catch (error) {
-		return NextResponse.json({ error: 'Đã xảy ra lỗi' }, { status: 500 });
+		return ResponseService.internalError('Đã xảy ra lỗi');
 	}
 }
 
@@ -43,12 +37,12 @@ export async function POST(request: NextRequest) {
 		const [error, transaction] = await transactionService.create(data);
 
 		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 400 });
+			return ResponseService.badRequest(error.message);
 		}
 
-		return NextResponse.json({ transaction }, { status: 201 });
+		return ResponseService.created({ transaction });
 	} catch (error) {
-		return NextResponse.json({ error: 'Đã xảy ra lỗi' }, { status: 500 });
+		return ResponseService.internalError('Đã xảy ra lỗi');
 	}
 }
 
@@ -58,18 +52,18 @@ export async function PUT(request: NextRequest) {
 		const id = searchParams.get('id');
 
 		if (!id) {
-			return NextResponse.json({ error: 'ID là bắt buộc' }, { status: 400 });
+			return ResponseService.badRequest('ID là bắt buộc');
 		}
 
 		const data = await request.json();
 		const [error, transaction] = await transactionService.update(id, data);
 
 		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 400 });
+			return ResponseService.badRequest(error.message);
 		}
 
-		return NextResponse.json({ transaction });
+		return ResponseService.success({ transaction });
 	} catch (error) {
-		return NextResponse.json({ error: 'Đã xảy ra lỗi' }, { status: 500 });
+		return ResponseService.internalError('Đã xảy ra lỗi');
 	}
 }

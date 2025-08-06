@@ -1,6 +1,7 @@
 import { TransactionRepository } from '../repositories/transaction.repository';
 import { TTransaction } from '../models/transaction.model';
-import { ErrorFirst } from '@/types/error-first.type';
+import { ErrorFirst } from '@/lib/types/error-first.type';
+import { paginateService } from './paginate.service';
 
 export class TransactionService {
 	private static instance: TransactionService | null = null;
@@ -34,32 +35,19 @@ export class TransactionService {
 		}
 	}
 
-	async getAll(filter: Partial<TTransaction> = {}): Promise<ErrorFirst<TTransaction[]>> {
-		try {
-			const result = await this.transactionRepo.getAll(filter);
-			return [null, result];
-		} catch (error) {
-			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
-		}
-	}
-
-	async getPaginated(
+	async getList(
 		filter: Partial<TTransaction> = {},
 		page = 1,
-		limit = 10
-	): Promise<ErrorFirst<{ transactions: TTransaction[]; pagination: any }>> {
+		limit = 10,
+		sort?: Record<string, 1 | -1>
+	): Promise<ErrorFirst<import('../types/paginate.type').PaginateResult<TTransaction>>> {
 		try {
-			const result = await this.transactionRepo.getPaginated(filter, page, limit);
-			return [null, result];
-		} catch (error) {
-			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
-		}
-	}
-
-	async getTotalBalance(): Promise<ErrorFirst<{ income: number; expense: number; balance: number }>> {
-		try {
-			const result = await this.transactionRepo.getTotalBalance();
-			return [null, result];
+			const [data, total] = await Promise.all([
+				this.transactionRepo.getList(filter, sort, limit, page),
+				this.transactionRepo.getList(filter, sort).then((list) => list.length),
+			]);
+			const pagination = paginateService.getPaginated({ data, total }, limit, page);
+			return [null, pagination];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}

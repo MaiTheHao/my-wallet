@@ -1,5 +1,8 @@
+'use client';
 import { useState, useEffect } from 'react';
-import { Transaction, PaginationInfo, BalanceInfo, ChatMessage } from '@/types/transaction.types';
+import { Transaction, PaginationInfo } from '@/lib/types/transaction.types';
+import { TransactionApiService } from '@/lib/services/api/transaction-api.service';
+import { CLIENT_EVENTS } from '@/lib/const/events';
 
 export function useTransactions() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -9,29 +12,24 @@ export function useTransactions() {
 		total: 0,
 		totalPages: 0,
 	});
-	const [balance, setBalance] = useState<BalanceInfo>({
-		income: 0,
-		expense: 0,
-		balance: 0,
-	});
 	const [loading, setLoading] = useState(false);
-	const [chatLoading, setChatLoading] = useState(false);
-	const [message, setMessage] = useState('');
-	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
 	const fetchTransactions = async (page = 1) => {
 		setLoading(true);
 		try {
-			let url = `/api/v1/transaction?page=${page}&limit=5`;
+			const result = await TransactionApiService.getList(page, pagination.limit);
 
-			const res = await fetch(url);
-			const data = await res.json();
-
-			if (res.ok) {
-				setTransactions(data.transactions || []);
-				setPagination(data.pagination);
-				// Fetch balance as well
-				fetchBalance();
+			if (result.success && result.data) {
+				setTransactions(result.data.data);
+				setPagination({
+					page: result.data.page,
+					limit: result.data.limit,
+					total: result.data.total,
+					totalPages: result.data.totalPages,
+				});
+			} else {
+				setTransactions([]);
+				setPagination((prev) => ({ ...prev, total: 0, totalPages: 0 }));
 			}
 		} catch (error) {
 			console.error('Không thể tải danh sách giao dịch:', error);
@@ -39,69 +37,17 @@ export function useTransactions() {
 		setLoading(false);
 	};
 
-	const fetchBalance = async () => {
-		try {
-			const res = await fetch('/api/v1/transaction/balance');
-			const data = await res.json();
-			if (res.ok) {
-				setBalance(data);
-			}
-		} catch (error) {
-			console.error('Không thể tải thông tin số dư:', error);
-		}
-	};
-
 	const deleteTransaction = async (id: string) => {
 		if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
-
 		try {
-			const res = await fetch(`/api/v1/transaction/${id}`, {
-				method: 'DELETE',
-			});
+			const result = await TransactionApiService.delete(id);
 
-			if (res.ok) {
+			if (result.success) {
 				fetchTransactions(pagination.page);
-				setChatHistory((prev) => [...prev, { type: 'bot', content: '✅ Đã xóa giao dịch thành công!' }]);
-			} else {
-				setChatHistory((prev) => [...prev, { type: 'bot', content: '❌ Không thể xóa giao dịch' }]);
 			}
 		} catch (error) {
-			setChatHistory((prev) => [...prev, { type: 'bot', content: '❌ Lỗi khi xóa giao dịch' }]);
+			console.error('❌ Lỗi khi xóa giao dịch', error);
 		}
-	};
-
-	const handleChatSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!message.trim()) return;
-
-		setChatLoading(true);
-		const userMessage = message.trim();
-
-		// Add user message to chat history
-		setChatHistory((prev) => [...prev, { type: 'user', content: userMessage }]);
-		setMessage('');
-
-		try {
-			const res = await fetch('/api/v1/chat', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ message: userMessage }),
-			});
-
-			const data = await res.json();
-
-			if (res.ok) {
-				setChatHistory((prev) => [...prev, { type: 'bot', content: data.reply }]);
-				fetchTransactions(pagination.page);
-			} else {
-				const errorMsg = `❌ Lỗi: ${data.error}`;
-				setChatHistory((prev) => [...prev, { type: 'bot', content: errorMsg }]);
-			}
-		} catch (error) {
-			const errorMsg = '❌ Không thể xử lý yêu cầu';
-			setChatHistory((prev) => [...prev, { type: 'bot', content: errorMsg }]);
-		}
-		setChatLoading(false);
 	};
 
 	useEffect(() => {
@@ -111,14 +57,8 @@ export function useTransactions() {
 	return {
 		transactions,
 		pagination,
-		balance,
 		loading,
-		chatLoading,
-		message,
-		setMessage,
-		chatHistory,
 		fetchTransactions,
 		deleteTransaction,
-		handleChatSubmit,
 	};
 }

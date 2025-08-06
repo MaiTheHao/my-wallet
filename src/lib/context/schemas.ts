@@ -34,9 +34,10 @@ export const GET_TOPIC_RESPONSE_JSON_SCHEMA = {
 			type: Type.STRING,
 			enum: Object.values(Topics),
 		},
-		description: {
+		reply: {
 			type: Type.STRING,
+			description: 'Phản hồi của AI nếu có, có thể là yêu cầu thêm thông tin hoặc xác nhận',
 		},
 	},
-	required: ['topic', 'description'],
+	required: ['topic', 'reply'],
 };

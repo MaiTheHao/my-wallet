@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { TransactionService } from '@/services/TransactionService';
+import { NextRequest } from 'next/server';
+import { TransactionService } from '@/lib/services/transaction.service';
+import { ResponseService } from '@/lib/services/response.service';
 
 const transactionService = TransactionService.getInstance();
 
@@ -8,17 +9,17 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
 		const { id } = await params;
 
 		if (!id) {
-			return NextResponse.json({ error: 'ID là bắt buộc' }, { status: 400 });
+			return ResponseService.badRequest('ID là bắt buộc');
 		}
 
 		const [error, transaction] = await transactionService.delete(id);
 
 		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 404 });
+			return ResponseService.notFound(error.message);
 		}
 
-		return NextResponse.json({ message: 'Đã xóa giao dịch thành công', transaction });
+		return ResponseService.success({ message: 'Đã xóa giao dịch thành công', transaction });
 	} catch (error) {
-		return NextResponse.json({ error: 'Đã xảy ra lỗi' }, { status: 500 });
+		return ResponseService.internalError('Đã xảy ra lỗi');
 	}
 }

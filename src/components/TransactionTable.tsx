@@ -1,25 +1,24 @@
+'use client';
 import React from 'react';
-import { Transaction, PaginationInfo } from '@/types/transaction.types';
 import { Section } from './Section';
 import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useEventEmitter } from '@/hooks/useEventEmitter';
+import { CLIENT_EVENTS } from '@/lib/const/events';
 
-interface TransactionTableProps {
-	transactions: Transaction[];
-	pagination: PaginationInfo;
-	loading: boolean;
-	onRefresh: () => void;
-	onDelete: (id: string) => void;
-	onPageChange: (page: number) => void;
-}
+export function TransactionTable() {
+	const { transactions, pagination, loading, fetchTransactions, deleteTransaction } = useTransactions();
+	const eventEmitter = useEventEmitter();
 
-export function TransactionTable({
-	transactions,
-	pagination,
-	loading,
-	onRefresh,
-	onDelete,
-	onPageChange,
-}: TransactionTableProps) {
+	React.useEffect(() => {
+		const handler = eventEmitter.on(CLIENT_EVENTS.TRANSACTION_CREATED, () => {
+			fetchTransactions(pagination.page);
+		});
+		return () => {
+			eventEmitter.off(CLIENT_EVENTS.TRANSACTION_CREATED, handler);
+		};
+	}, [pagination.page, fetchTransactions]);
+
 	const formatAmount = (amount: number, type: 'income' | 'expense') => {
 		const formatted = amount.toLocaleString('vi-VN');
 		return type === 'income' ? `+${formatted}đ` : `-${formatted}đ`;
@@ -35,6 +34,12 @@ export function TransactionTable({
 		});
 	};
 
+	const handlePageChange = (page: number) => {
+		if (page >= 1 && page <= pagination.totalPages) {
+			fetchTransactions(page);
+		}
+	};
+
 	return (
 		<Section
 			icon={<span className='text-white text-lg font-bold'>📋</span>}
@@ -42,7 +47,7 @@ export function TransactionTable({
 			headerRight={
 				<>
 					<button
-						onClick={onRefresh}
+						onClick={() => fetchTransactions(pagination.page)}
 						className='px-4 py-2 bg-blue-500 hover:bg-blue-600 hover:cursor-pointer text-white rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2'
 						disabled={loading}
 					>
@@ -127,7 +132,7 @@ export function TransactionTable({
 									</td>
 									<td className='px-6 py-4 text-center'>
 										<button
-											onClick={() => onDelete(transaction._id)}
+											onClick={() => deleteTransaction(transaction._id)}
 											className='px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 mx-auto'
 										>
 											<Trash2 size={14} />
@@ -179,7 +184,7 @@ export function TransactionTable({
 									</span>
 								</div>
 								<button
-									onClick={() => onDelete(transaction._id)}
+									onClick={() => deleteTransaction(transaction._id)}
 									className='w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1'
 								>
 									<Trash2 size={14} />
@@ -200,7 +205,7 @@ export function TransactionTable({
 						</p>
 						<div className='flex gap-2'>
 							<button
-								onClick={() => onPageChange(pagination.page - 1)}
+								onClick={() => handlePageChange(pagination.page - 1)}
 								disabled={pagination.page <= 1}
 								className='px-3 md:px-4 py-1 md:py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1'
 							>
@@ -208,7 +213,7 @@ export function TransactionTable({
 								<span className='hidden md:inline'>Trước</span>
 							</button>
 							<button
-								onClick={() => onPageChange(pagination.page + 1)}
+								onClick={() => handlePageChange(pagination.page + 1)}
 								disabled={pagination.page >= pagination.totalPages}
 								className='px-3 md:px-4 py-1 md:py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1'
 							>

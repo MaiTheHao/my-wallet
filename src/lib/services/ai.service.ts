@@ -1,14 +1,34 @@
-import { GoogleGenAI } from '@google/genai';
-import { TopicDescriptions, Topics } from '@/context/topics';
-import { ADD_TRANSACTION_RESPONSE_JSON_SCHEMA, GET_TOPIC_RESPONSE_JSON_SCHEMA } from '@/context/schemas';
-import { ErrorFirst } from '@/types/error-first.type';
-import { TTransaction } from '@/models/transaction.model';
+import { GoogleGenAI, HarmBlockThreshold, HarmCategory } from '@google/genai';
+import { TopicDescriptions, Topics } from '@/lib/context/topics';
+import { ADD_TRANSACTION_RESPONSE_JSON_SCHEMA, GET_TOPIC_RESPONSE_JSON_SCHEMA } from '@/lib/context/schemas';
+import { ErrorFirst } from '@/lib/types/error-first.type';
+import { TTransaction } from '@/lib/models/transaction.model';
+import appConfig from '@/app.config';
 
 export class AIService {
 	private static instance: AIService | null = null;
-	private model = 'gemini-2.5-flash';
-	private apiKey: string = process.env.GEMINI_API_KEY || '';
-	private genAI: GoogleGenAI = new GoogleGenAI({ apiKey: this.apiKey });
+	private model = appConfig.google_ai_studio.model;
+	private apiKey = appConfig.google_ai_studio.apiKey;
+	private basePrompt = appConfig.google_ai_studio.basePrompt;
+	private genAI = new GoogleGenAI({ apiKey: this.apiKey });
+	private safetySettings = [
+		{
+			category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+			threshold: HarmBlockThreshold.BLOCK_NONE,
+		},
+		{
+			category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+			threshold: HarmBlockThreshold.BLOCK_NONE,
+		},
+		{
+			category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+			threshold: HarmBlockThreshold.BLOCK_NONE,
+		},
+		{
+			category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+			threshold: HarmBlockThreshold.BLOCK_NONE,
+		},
+	];
 
 	private constructor() {}
 
@@ -19,20 +39,12 @@ export class AIService {
 		return AIService.instance;
 	}
 
-	async getTopic(
-		prompt: string,
-		options?: any
-	): Promise<
-		ErrorFirst<{
-			topic: Topics;
-			description: string;
-		}>
-	> {
+	async getTopic(prompt: string, options?: any): Promise<ErrorFirst<{ topic: Topics; reply: string }>> {
 		try {
 			const contents = [
+				this.basePrompt,
 				'Dựa trên mô tả sau, hãy chọn một topic phù hợp nhất trong số các topic sau:',
 				JSON.stringify(TopicDescriptions),
-				'Chỉ trả về một topic duy nhất dưới dạng JSON: { "topic": "<topic>" }',
 				'Mô tả:',
 				prompt,
 			].join('\n');
@@ -43,6 +55,7 @@ export class AIService {
 				config: {
 					responseJsonSchema: GET_TOPIC_RESPONSE_JSON_SCHEMA,
 					responseMimeType: 'application/json',
+					safetySettings: this.safetySettings,
 				},
 				...options,
 			});
@@ -62,21 +75,17 @@ export class AIService {
 
 	async addTransaction(prompt: string, options?: any): Promise<ErrorFirst<TTransaction>> {
 		try {
+			const contents = [this.basePrompt, 'Hãy phân tích mô tả giao dịch sau và xác định giao dịch:', prompt].join(
+				'\n'
+			);
+
 			const response = await this.genAI.models.generateContent({
 				model: this.model,
-				contents: [
-					'Hãy phân tích mô tả giao dịch sau và xác định:',
-					'- amount: số tiền (chỉ số, không có đơn vị)',
-					'- description: mô tả ngắn gọn',
-					'- type: "income" nếu là thu nhập, "expense" nếu là chi tiêu',
-					'- category: danh mục (ví dụ: Ăn uống, Xăng xe, Lương, Di chuyển, Mua sắm, Khác)',
-					'',
-					'Mô tả giao dịch:',
-					prompt,
-				].join('\n'),
+				contents,
 				config: {
 					responseJsonSchema: ADD_TRANSACTION_RESPONSE_JSON_SCHEMA,
 					responseMimeType: 'application/json',
+					safetySettings: this.safetySettings,
 				},
 				...options,
 			});
