@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TransactionApiService } from '@/lib/services/api/transaction-api.service';
+import { CLIENT_EVENTS } from '@/lib/const/events';
 
 type Balance = Record<string, number>;
 
@@ -7,7 +8,7 @@ interface UseBalanceResult {
 	balance: Balance | null;
 	loading: boolean;
 	error: string | null;
-	refetch: () => void;
+	refetch: () => Promise<void>;
 }
 
 export function useBalance(): UseBalanceResult {

@@ -14,26 +14,20 @@ class PaginateService {
 
 	paginate<T>(array: T[], limit: number, page: number): PaginateResult<T> {
 		const total = array.length;
-		const totalPages = Math.ceil(total / limit);
 		const start = (page - 1) * limit;
 		const data = array.slice(start, start + limit);
-
-		return {
-			data,
-			total,
-			page,
-			limit,
-			totalPages,
-			hasNext: page < totalPages,
-			hasPrev: page > 1,
-		};
+		return this.buildResult(data, total, limit, page);
 	}
 
 	getPaginated<T>(dbResult: { data: T[]; total: number }, limit: number, page: number): PaginateResult<T> {
-		const totalPages = Math.ceil(dbResult.total / limit);
+		return this.buildResult(dbResult.data, dbResult.total, limit, page);
+	}
+
+	private buildResult<T>(data: T[], total: number, limit: number, page: number): PaginateResult<T> {
+		const totalPages = Math.ceil(total / limit);
 		return {
-			data: dbResult.data,
-			total: dbResult.total,
+			data,
+			total,
 			page,
 			limit,
 			totalPages,

@@ -10,14 +10,14 @@ const quickLinks = [
 		className: 'bg-purple-50 hover:bg-purple-100 text-purple-700',
 	},
 	{
-		href: '#transaction-table',
-		label: 'Lịch Sử Giao Dịch',
-		className: 'bg-green-50 hover:bg-green-100 text-green-700',
-	},
-	{
 		href: '#summary',
 		label: 'Tổng Quan Ví',
 		className: 'bg-blue-50 hover:bg-blue-100 text-blue-700',
+	},
+	{
+		href: '#transaction-table',
+		label: 'Lịch Sử Giao Dịch',
+		className: 'bg-green-50 hover:bg-green-100 text-green-700',
 	},
 ];
 

@@ -4,30 +4,19 @@ import { ADD_TRANSACTION_RESPONSE_JSON_SCHEMA, GET_TOPIC_RESPONSE_JSON_SCHEMA } 
 import { ErrorFirst } from '@/lib/types/error-first.type';
 import { TTransaction } from '@/lib/models/transaction.model';
 import appConfig from '@/app.config';
+import { isJson } from '../utils/validation';
 
 export class AIService {
 	private static instance: AIService | null = null;
-	private model = appConfig.google_ai_studio.model;
-	private apiKey = appConfig.google_ai_studio.apiKey;
-	private basePrompt = appConfig.google_ai_studio.basePrompt;
-	private genAI = new GoogleGenAI({ apiKey: this.apiKey });
-	private safetySettings = [
-		{
-			category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-			threshold: HarmBlockThreshold.BLOCK_NONE,
-		},
-		{
-			category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-			threshold: HarmBlockThreshold.BLOCK_NONE,
-		},
-		{
-			category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-			threshold: HarmBlockThreshold.BLOCK_NONE,
-		},
-		{
-			category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-			threshold: HarmBlockThreshold.BLOCK_NONE,
-		},
+	private readonly model = appConfig.google_ai_studio.model;
+	private readonly apiKey = appConfig.google_ai_studio.apiKey;
+	private readonly basePrompt = appConfig.google_ai_studio.basePrompt;
+	private readonly genAI = new GoogleGenAI({ apiKey: this.apiKey });
+	private readonly safetySettings = [
+		{ category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
+		{ category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.OFF },
+		{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.OFF },
+		{ category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
 	];
 
 	private constructor() {}
@@ -43,9 +32,9 @@ export class AIService {
 		try {
 			const contents = [
 				this.basePrompt,
-				'Dựa trên mô tả sau, hãy chọn một topic phù hợp nhất trong số các topic sau:',
+				'Dựa trên prompt sau, hãy chọn một topic phù hợp nhất trong số các topic sau:',
 				JSON.stringify(TopicDescriptions),
-				'Mô tả:',
+				'Prompt:',
 				prompt,
 			].join('\n');
 
@@ -61,13 +50,10 @@ export class AIService {
 			});
 
 			if (!response.text) return [new Error('Không nhận được phản hồi'), null];
+			const [jsonErr, jsonResponse] = isJson(response.text);
+			if (jsonErr) return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
 
-			try {
-				const jsonResponse = JSON.parse(response.text);
-				return [null, jsonResponse];
-			} catch {
-				return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
-			}
+			return [null, jsonResponse as { topic: Topics; reply: string }];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}
@@ -91,16 +77,11 @@ export class AIService {
 			});
 
 			if (!response.text) return [new Error('Không nhận được phản hồi'), null];
-
-			try {
-				const jsonResponse: TTransaction = JSON.parse(response.text);
-				if (!jsonResponse || typeof jsonResponse !== 'object') {
-					return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
-				}
-				return [null, jsonResponse];
-			} catch {
+			const [jsonErr, jsonResponse] = isJson(response.text);
+			if (jsonErr || !jsonResponse || typeof jsonResponse !== 'object') {
 				return [new Error('Phản hồi không phải là JSON hợp lệ'), null];
 			}
+			return [null, jsonResponse as TTransaction];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}

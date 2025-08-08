@@ -12,8 +12,8 @@ function Page() {
 			<BalanceContextProvider>
 				<TransactionContextProvider>
 					<ChatInterface />
-					<TransactionTable />
 					<Summary />
+					<TransactionTable />
 				</TransactionContextProvider>
 			</BalanceContextProvider>
 			<QuickMoveModal />

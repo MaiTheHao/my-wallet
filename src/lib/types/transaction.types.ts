@@ -23,4 +23,5 @@ export interface BalanceInfo {
 export interface ChatMessage {
 	type: 'user' | 'bot';
 	content: string;
+	error?: string;
 }

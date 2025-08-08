@@ -41,10 +41,7 @@ export function useTransactions() {
 		if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
 		try {
 			const result = await TransactionApiService.delete(id);
-
-			if (result.success) {
-				fetchTransactions(pagination.page);
-			}
+			if (result.success) fetchTransactions(pagination.page);
 		} catch (error) {
 			console.error('❌ Lỗi khi xóa giao dịch', error);
 		}

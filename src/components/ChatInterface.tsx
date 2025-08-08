@@ -3,9 +3,23 @@ import React from 'react';
 import { Bot, MessageCircle } from 'lucide-react';
 import { Section } from './Section';
 import { useChat } from '@/hooks/useChat';
+import { useTransactionContext } from '@/context/transaction-context/useTransactionContext';
+import { useBalanceContext } from '@/context/balance-context/useBalanceContext';
 
 export const ChatInterface = React.memo(function ChatInterface() {
-	const { message, setMessage, chatHistory, chatLoading, handleChatSubmit } = useChat();
+	const { message, setMessage, chatHistory, chatLoading, sendMessage } = useChat();
+	const { fetchTransactions } = useTransactionContext();
+	const { refetchBalance } = useBalanceContext();
+
+	const handleSubmitChat = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!message.trim()) return;
+
+		const success = await sendMessage(message);
+		if (success) {
+			await Promise.all([fetchTransactions(), refetchBalance()]);
+		}
+	};
 
 	return (
 		<Section
@@ -32,12 +46,16 @@ export const ChatInterface = React.memo(function ChatInterface() {
 						<div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
 							<div
 								className={`max-w-[80%] px-3 py-2 md:px-4 md:py-3 rounded-lg md:rounded-xl ${
-									chat.type === 'user'
+									chat.error
+										? 'bg-red-100 border border-red-400 text-red-700'
+										: chat.type === 'user'
 										? 'bg-blue-500 text-white'
 										: 'bg-white border border-slate-200 text-slate-700'
 								}`}
 							>
-								<div className='whitespace-pre-wrap text-sm'>{chat.content}</div>
+								<div className='whitespace-pre-wrap text-sm'>
+									{chat.error ? chat.error : chat.content}
+								</div>
 							</div>
 						</div>
 					))
@@ -56,7 +74,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
 			</div>
 
 			{/* Chat Input */}
-			<form onSubmit={handleChatSubmit} className='flex gap-3 pb-4 pl-2 pr-2 sm:pl-4 sm:pr-4'>
+			<form onSubmit={handleSubmitChat} className='flex gap-3 pb-4 pl-2 pr-2 sm:pl-4 sm:pr-4'>
 				<input
 					className='flex-1 px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 text-slate-700'
 					value={message}

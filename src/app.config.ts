@@ -37,8 +37,8 @@ const appConfig = {
 	google_ai_studio: {
 		// API key for Google AI Studio
 		apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY || '',
-		// AI model name (default: gemini-2.5-flash)
-		model: 'gemini-2.5-flash',
+		// AI model name (default: gemini-2.5-flash-lite)
+		model: 'gemini-2.5-flash-lite',
 		// Base prompt for AI assistant (Vietnamese, can be customized)
 		basePrompt: [
 			'🌟 Bạn là Sổ Tay Chi Tiêu Thông Minh của tôi! 🌟',

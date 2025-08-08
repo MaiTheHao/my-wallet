@@ -42,8 +42,8 @@ export class TransactionRepository {
 		projection?: Record<string, 0 | 1>
 	) {
 		await this.connectToDatabase();
-		const query = Transaction.find(filter || {});
-		if (sort) query.sort(sort);
+		const query = Transaction.find(filter || { createdAt: { $exists: true } });
+		if (sort) query.sort(sort || { createdAt: -1 });
 		if (projection) query.select(projection);
 		query.limit(limit).skip((page - 1) * limit);
 		return await query.exec();
@@ -88,6 +88,11 @@ export class TransactionRepository {
 		if (sort) query.sort(sort);
 		if (projection) query.select(projection);
 		return await query.exec();
+	}
+
+	async count(filter?: FilterQuery<TTransaction>): Promise<number> {
+		await this.connectToDatabase();
+		return await Transaction.countDocuments(filter || {});
 	}
 
 	private async connectToDatabase() {

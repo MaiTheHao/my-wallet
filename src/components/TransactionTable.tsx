@@ -1,23 +1,21 @@
 'use client';
 import React from 'react';
 import { Section } from './Section';
-import { RefreshCw, ArrowDownCircle, ArrowUpCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+	RefreshCw,
+	ArrowDownCircle,
+	ArrowUpCircle,
+	Trash2,
+	ChevronLeft,
+	ChevronRight,
+	ClipboardList,
+} from 'lucide-react';
 import { useTransactionContext } from '@/context/transaction-context/useTransactionContext';
-import { useEventEmitter } from '@/hooks/useEventEmitter';
-import { CLIENT_EVENTS } from '@/lib/const/events';
+import { useBalanceContext } from '@/context/balance-context/useBalanceContext';
 
 export function TransactionTable() {
 	const { transactions, pagination, loading, fetchTransactions, deleteTransaction } = useTransactionContext();
-	const eventEmitter = useEventEmitter();
-
-	React.useEffect(() => {
-		const handler = eventEmitter.on(CLIENT_EVENTS.TRANSACTION_CREATED, () => {
-			fetchTransactions(pagination.page);
-		});
-		return () => {
-			eventEmitter.off(CLIENT_EVENTS.TRANSACTION_CREATED, handler);
-		};
-	}, [pagination.page, fetchTransactions]);
+	const { refetchBalance } = useBalanceContext();
 
 	const formatAmount = (amount: number, type: 'income' | 'expense') => {
 		const formatted = amount.toLocaleString('vi-VN');
@@ -40,9 +38,19 @@ export function TransactionTable() {
 		}
 	};
 
+	const handleDeleteTransaction = async (id: string) => {
+		if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
+		try {
+			await deleteTransaction(id);
+			await refetchBalance();
+		} catch (error) {
+			console.error('❌ Lỗi khi xóa giao dịch', error);
+		}
+	};
+
 	return (
 		<Section
-			icon={<span className='text-white text-lg font-bold'>📋</span>}
+			icon={<ClipboardList size={20} className='text-white' />} // Lucide icon
 			title='Lịch Sử Giao Dịch'
 			id='transaction-table'
 			headerRight={
@@ -70,7 +78,7 @@ export function TransactionTable() {
 			) : transactions.length === 0 ? (
 				<div className='text-center py-16 text-slate-400'>
 					<div className='w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-						<span className='text-2xl'>📝</span>
+						<ClipboardList size={32} className='text-blue-400' />
 					</div>
 					<p className='text-lg font-medium'>Chưa có giao dịch nào</p>
 					<p className='text-sm'>Hãy bắt đầu ghi chép chi tiêu của bạn!</p>
@@ -155,7 +163,7 @@ export function TransactionTable() {
 									</td>
 									<td className='px-6 py-4 text-center'>
 										<button
-											onClick={() => deleteTransaction(transaction._id)}
+											onClick={() => handleDeleteTransaction(transaction._id)}
 											className='px-3 py-1 bg-red-100 hover:bg-red-400 hover:text-white text-red-600 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 mx-auto shadow-sm'
 										>
 											<Trash2 size={14} />

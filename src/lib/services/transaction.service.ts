@@ -2,6 +2,7 @@ import { TransactionRepository } from '../repositories/transaction.repository';
 import { TransactionType, TTransaction } from '../models/transaction.model';
 import { ErrorFirst } from '@/lib/types/error-first.type';
 import { paginateService } from './paginate.service';
+import { PaginateResult } from '../types/paginate.type';
 
 export class TransactionService {
 	private static instance: TransactionService | null = null;
@@ -40,12 +41,16 @@ export class TransactionService {
 		page = 1,
 		limit = 10,
 		sort?: Record<string, 1 | -1>
-	): Promise<ErrorFirst<import('../types/paginate.type').PaginateResult<TTransaction>>> {
+	): Promise<ErrorFirst<PaginateResult<TTransaction>>> {
 		try {
-			const [data, total] = await Promise.all([
+			const [data, [countErr, total]] = await Promise.all([
 				this.transactionRepo.getList(filter, sort, limit, page),
-				this.transactionRepo.getList(filter, sort).then((list) => list.length),
+				this.count(filter),
 			]);
+
+			if (countErr) return [countErr, null];
+			if (!data?.length || !total) return [new Error('Không tìm thấy giao dịch'), null];
+
 			const pagination = paginateService.getPaginated({ data, total }, limit, page);
 			return [null, pagination];
 		} catch (error) {
@@ -61,10 +66,10 @@ export class TransactionService {
 				[TransactionType.EXPENSE]: 0,
 			};
 
-			for (const t of transactions) {
-				const type = t.type as TransactionType;
-				if (!Object.values(TransactionType).includes(type)) continue;
-				typeTotals[type] = (typeTotals[type] || 0) + t.amount;
+			for (const { type, amount } of transactions) {
+				if (Object.values(TransactionType).includes(type as TransactionType)) {
+					typeTotals[type as TransactionType] += amount;
+				}
 			}
 
 			return [null, { ...typeTotals }];
@@ -91,6 +96,15 @@ export class TransactionService {
 			const result = await this.transactionRepo.delete(id);
 			if (!result) return [new Error('Không tìm thấy giao dịch để xoá'), null];
 			return [null, result];
+		} catch (error) {
+			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
+		}
+	}
+
+	async count(filter: Partial<TTransaction> = {}): Promise<ErrorFirst<number>> {
+		try {
+			const count = await this.transactionRepo.count(filter as any);
+			return [null, count];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}

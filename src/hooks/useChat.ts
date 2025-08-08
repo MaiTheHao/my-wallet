@@ -1,50 +1,45 @@
 'use client';
 import { useState } from 'react';
 import { ChatMessage } from '@/lib/types/transaction.types';
-import { TResponseData } from '@/lib/types/response.type';
 import { AiApiService } from '@/lib/services/api/ai-api.service';
-import { useEventEmitter } from './useEventEmitter';
-import { CLIENT_EVENTS } from '@/lib/const/events';
 
 export function useChat() {
 	const [chatLoading, setChatLoading] = useState(false);
 	const [message, setMessage] = useState('');
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-	const eventEmitter = useEventEmitter();
 
-	const handleChatSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!message.trim()) return;
-
+	async function sendMessage(msg: string): Promise<boolean> {
+		if (!msg.trim()) return false;
 		setChatLoading(true);
-		const userMessage = message.trim();
-
-		setChatHistory((prev) => [...prev, { type: 'user', content: userMessage }]);
-		setMessage('');
-
+		setChatHistory((prev) => [...prev, { type: 'user', content: msg }]);
 		try {
-			const result: TResponseData<{ reply: string }> = await AiApiService.chat(userMessage);
-
-			if (result.success && result.data) {
-				setChatHistory((prev) => [...prev, { type: 'bot', content: result.data?.reply ?? '' }]);
-				eventEmitter.emit(CLIENT_EVENTS.TRANSACTION_CREATED, {});
+			const res = await AiApiService.chat(msg);
+			if (res.success && res.data) {
+				setChatHistory((prev) => [
+					...prev,
+					{ type: 'bot', content: res.data?.reply || 'Không có phản hồi từ AI' },
+				]);
+				setMessage('');
+				setChatLoading(false);
+				return true;
 			} else {
 				setChatHistory((prev) => [
 					...prev,
-					{ type: 'bot', content: `${result.error || 'Không thể xử lý yêu cầu'}` },
+					{ type: 'bot', error: res.error || 'Có lỗi xảy ra, vui lòng thử lại.', content: '' },
 				]);
 			}
-		} catch (error) {
-			setChatHistory((prev) => [...prev, { type: 'bot', content: 'Không thể xử lý yêu cầu' }]);
+		} catch (err) {
+			setChatHistory((prev) => [...prev, { type: 'bot', content: 'Có lỗi xảy ra, vui lòng thử lại.' }]);
 		}
 		setChatLoading(false);
-	};
+		return false;
+	}
 
 	return {
-		chatLoading,
 		message,
 		setMessage,
 		chatHistory,
-		handleChatSubmit,
+		chatLoading,
+		sendMessage,
 	};
 }

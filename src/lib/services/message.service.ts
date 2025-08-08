@@ -19,7 +19,7 @@ export class MessageService {
 
 	async processMessage(prompt: string, options?: any): Promise<ErrorFirst<string>> {
 		try {
-			const [topicError, topic] = await this.aiService.getTopic(prompt, options);
+			const [topicError, topic] = await this.getTopic(prompt, options);
 			if (topicError) return [topicError, null];
 
 			if (!topic?.topic) {
@@ -27,28 +27,34 @@ export class MessageService {
 			}
 
 			if (topic.topic === Topics.ADD_TRANSACTION) {
-				const [transactionError, transactionData] = await this.aiService.addTransaction(prompt, options);
-				if (transactionError) return [transactionError, null];
-				if (!transactionData) return [new Error('Dữ liệu giao dịch không hợp lệ'), null];
-
-				const [createError, createdTransaction] = await this.transactionService.create(transactionData);
-				if (createError) return [createError, null];
-
-				const typeText = transactionData.type === 'income' ? 'Thu nhập' : 'Chi tiêu';
-				const successMessage = `✅ Đã thêm ${typeText.toLowerCase()}: ${transactionData.amount.toLocaleString(
-					'vi-VN'
-				)}đ (${transactionData.category}) - ${transactionData.description}`;
-
-				return [null, successMessage];
-			}
-
-			if (topic.topic === Topics.RE_ASK) {
-				return [null, topic.reply || 'Xin vui lòng cung cấp thêm thông tin để tôi có thể giúp bạn.'];
+				return await this.handleAddTransaction(prompt, options);
 			}
 
 			return [new Error(topic?.reply || 'Xin lỗi, tôi không hiểu yêu cầu của bạn.'), null];
 		} catch (error) {
 			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
 		}
+	}
+
+	private async getTopic(prompt: string, options?: any) {
+		return await this.aiService.getTopic(prompt, options);
+	}
+
+	private async handleAddTransaction(prompt: string, options?: any): Promise<ErrorFirst<string>> {
+		const [transactionError, transactionData] = await this.aiService.addTransaction(prompt, options);
+		if (transactionError) return [transactionError, null];
+		if (!transactionData) return [new Error('Dữ liệu giao dịch không hợp lệ'), null];
+
+		const [createError] = await this.transactionService.create(transactionData);
+		if (createError) return [createError, null];
+
+		return [null, this.buildSuccessMessage(transactionData)];
+	}
+
+	private buildSuccessMessage(transactionData: any): string {
+		const typeText = transactionData.type === 'income' ? 'Thu nhập' : 'Chi tiêu';
+		return `✅ Đã thêm ${typeText.toLowerCase()}: ${transactionData.amount.toLocaleString('vi-VN')}đ (${
+			transactionData.category
+		}) - ${transactionData.description}`;
 	}
 }

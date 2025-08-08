@@ -6,21 +6,13 @@ const transactionService = TransactionService.getInstance();
 
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
-	const id = searchParams.get('id');
 	const page = parseInt(searchParams.get('page') || '1');
 	const limit = parseInt(searchParams.get('limit') || '10');
 	try {
-		if (id) {
-			const [error, transaction] = await transactionService.getById(id);
-			if (error) {
-				return ResponseService.notFound(error.message);
-			}
-			return ResponseService.success({ transaction });
-		}
+		const filter: any = { createdAt: { $exists: true } };
+		const sort: any = { createdAt: -1 };
 
-		const filter: any = {};
-
-		const [error, result] = await transactionService.getList(filter, page, limit);
+		const [error, result] = await transactionService.getList(filter, page, limit, sort);
 		if (error) {
 			return ResponseService.internalError(error.message);
 		}

@@ -11,7 +11,7 @@ export const ADD_TRANSACTION_RESPONSE_JSON_SCHEMA = {
 		},
 		description: {
 			type: Type.STRING,
-			description: 'Mô tả giao dịch (ngắn gọn)',
+			description: 'Mô tả giao dịch chi tiết (Không cần thời gian vì mặc định là thời gian hiện tại)',
 		},
 		type: {
 			type: Type.STRING,
