@@ -1,60 +1,93 @@
 import { AIService } from './ai.service';
+import { TransactionService } from './transaction.service';
 import { Topics } from '@/lib/context/topics';
 import { ErrorFirst } from '@/lib/types/error-first.type';
-import { TransactionService } from './transaction.service';
+import { TTransaction } from '@/lib/models/transaction.model';
 
 export class MessageService {
-	private static instance: MessageService | null = null;
-	private aiService = AIService.getInstance();
-	private transactionService = TransactionService.getInstance();
+    private static instance: MessageService | null = null;
+    
+    // Dependencies injected internally
+    private readonly aiService = AIService.getInstance();
+    private readonly transactionService = TransactionService.getInstance();
 
-	private constructor() {}
+    private constructor() {}
 
-	public static getInstance(): MessageService {
-		if (!MessageService.instance) {
-			MessageService.instance = new MessageService();
-		}
-		return MessageService.instance;
-	}
+    public static getInstance(): MessageService {
+        if (!MessageService.instance) {
+            MessageService.instance = new MessageService();
+        }
+        return MessageService.instance;
+    }
 
-	async processMessage(prompt: string, options?: any): Promise<ErrorFirst<string>> {
-		try {
-			const [topicError, topic] = await this.getTopic(prompt, options);
-			if (topicError) return [topicError, null];
+    /**
+     * Entry point chính để xử lý tin nhắn người dùng
+     */
+    async processMessage(prompt: string, options?: any): Promise<ErrorFirst<string>> {
+        try {
+            // 1. Xác định Topic và Intent của người dùng
+            const [topicError, topicResult] = await this.aiService.getTopic(prompt, options);
+            
+            if (topicError) return [topicError, null];
+            if (!topicResult) return [new Error('Không thể xác định yêu cầu của bạn.'), null];
 
-			if (!topic?.topic) {
-				return [new Error('Xin lỗi, tôi không hiểu yêu cầu của bạn.'), null];
-			}
+            // 2. Routing xử lý dựa trên Topic
+            switch (topicResult.topic) {
+                case Topics.ADD_TRANSACTION:
+                    return await this.handleTransactionIntent(prompt, options);
+                
+                // Mở rộng: Có thể thêm các case khác như Topics.VIEW_REPORT, Topics.DELETE_TRANSACTION v.v...
+                
+                default:
+                    // 3. Nếu là giao tiếp thông thường, trả về reply của AI (Success case, không phải Error)
+                    return this.handleConversationIntent(topicResult.reply);
+            }
 
-			if (topic.topic === Topics.ADD_TRANSACTION) {
-				return await this.handleAddTransaction(prompt, options);
-			}
+        } catch (error) {
+            // Catch-all cho các lỗi runtime không mong muốn
+            const err = error instanceof Error ? error : new Error('Lỗi hệ thống không xác định');
+            return [err, null];
+        }
+    }
 
-			return [new Error(topic?.reply || 'Xin lỗi, tôi không hiểu yêu cầu của bạn.'), null];
-		} catch (error) {
-			return [error instanceof Error ? error : new Error('Đã xảy ra lỗi'), null];
-		}
-	}
+    // --- Private Handlers ---
 
-	private async getTopic(prompt: string, options?: any) {
-		return await this.aiService.getTopic(prompt, options);
-	}
+    /**
+     * Xử lý luồng thêm giao dịch
+     */
+    private async handleTransactionIntent(prompt: string, options?: any): Promise<ErrorFirst<string>> {
+        // Bước 1: AI phân tích dữ liệu giao dịch
+        const [parseError, transactionData] = await this.aiService.addTransaction(prompt, options);
+        if (parseError) return [parseError, null];
+        if (!transactionData) return [new Error('Dữ liệu giao dịch không hợp lệ'), null];
 
-	private async handleAddTransaction(prompt: string, options?: any): Promise<ErrorFirst<string>> {
-		const [transactionError, transactionData] = await this.aiService.addTransaction(prompt, options);
-		if (transactionError) return [transactionError, null];
-		if (!transactionData) return [new Error('Dữ liệu giao dịch không hợp lệ'), null];
+        // Bước 2: Lưu xuống Database
+        const [createError] = await this.transactionService.create(transactionData);
+        if (createError) return [createError, null];
 
-		const [createError] = await this.transactionService.create(transactionData);
-		if (createError) return [createError, null];
+        // Bước 3: Trả về thông báo thành công đã format đẹp
+        return [null, this.formatSuccessMessage(transactionData)];
+    }
 
-		return [null, this.buildSuccessMessage(transactionData)];
-	}
+    /**
+     * Xử lý luồng hội thoại thông thường
+     */
+    private handleConversationIntent(reply: string): ErrorFirst<string> {
+        // Fallback text nếu AI trả về rỗng
+        const finalReply = reply || 'Xin lỗi, tôi không hiểu yêu cầu của bạn.';
+        return [null, finalReply];
+    }
 
-	private buildSuccessMessage(transactionData: any): string {
-		const typeText = transactionData.type === 'income' ? 'Thu nhập' : 'Chi tiêu';
-		return `✅ Đã thêm ${typeText.toLowerCase()}: ${transactionData.amount.toLocaleString('vi-VN')}đ (${
-			transactionData.category
-		}) - ${transactionData.description}`;
-	}
+    // --- Helpers ---
+
+    private formatSuccessMessage(t: TTransaction): string {
+        const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+        const amountStr = formatter.format(t.amount);
+        
+        // Icon tương ứng cho UI sinh động hơn
+        const icon = t.type === 'income' ? '💰' : '💸';
+        const typeText = t.type === 'income' ? 'Thu nhập' : 'Chi tiêu';
+
+        return `${icon} Đã thêm ${typeText}: **${amountStr}**\n📂 Danh mục: ${t.category}\n📝 Ghi chú: ${t.description}`;
+    }
 }
