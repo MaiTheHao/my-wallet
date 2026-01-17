@@ -92,4 +92,3 @@ export function QuickMoveModal() {
 }
 
 export default QuickMoveModal;
-		.
