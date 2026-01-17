@@ -1,6 +1,11 @@
 'use client';
 import React from 'react';
-import { ArrowUpCircle, ArrowDownCircle, Wallet, PiggyBank, Receipt } from 'lucide-react';
+import { 
+    Wallet, 
+    TrendingUp, 
+    TrendingDown, 
+    DollarSign 
+} from 'lucide-react';
 import { Section } from './Section';
 import { useBalanceContext } from '@/context/balance-context/useBalanceContext';
 
@@ -10,55 +15,100 @@ export function Summary() {
 	const totalIncome = balance?.income ?? 0;
 	const totalExpense = balance?.expense ?? 0;
 	const currentBalance = totalIncome - totalExpense;
-	const status = {
-		positive: currentBalance > 0,
-		negative: currentBalance < 0,
-		zero: currentBalance === 0,
-	};
 
-	const formatAmount = (amount: number) => amount.toLocaleString('vi-VN') + 'đ';
-
-	const balanceColor = status.positive ? 'text-green-600' : status.negative ? 'text-red-500' : 'text-gray-700';
-
-	const StatusIcon = status.positive ? ArrowUpCircle : status.negative ? ArrowDownCircle : Wallet;
+	const formatAmount = (amount: number) => {
+        // Dùng font mono nên format khoảng cách cho dễ đọc
+        return new Intl.NumberFormat('vi-VN', { style: 'decimal' }).format(amount);
+    };
 
 	return (
 		<Section
-			title='Tổng Quan Ví'
-			subtitle='Số dư hiện tại, thu nhập và chi tiêu'
+			title='Tổng quan ví'
+			subtitle='Tình hình tài chính hiện tại'
 			id='summary'
-			className='mb-8'
-			icon={<Wallet size={20} className='text-white' />}
+			className='mb-6'
+            // Icon section màu đen
+			icon={<Wallet size={18} className='text-black' />}
 		>
-			<div className='flex flex-col items-center bg-white rounded-xl px-6 py-8 md:px-10 md:py-12'>
-				<div className='flex flex-row items-center gap-2 mb-4'>
-					<span className={`text-4xl md:text-5xl font-bold leading-none ${balanceColor}`}>
-						{balanceLoading ? '...' : formatAmount(currentBalance)}
-					</span>
-				</div>
-				<div className='flex gap-6 w-full justify-center mt-2'>
-					<div className='flex flex-col items-center'>
-						<span className='flex items-center gap-1 text-xs text-gray-500 mb-1'>
-							<PiggyBank size={14} className='text-green-500' />
-							Thu nhập
+			<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+				
+                {/* CARD 1: SỐ DƯ HIỆN TẠI (Main Card - Dark Theme) */}
+				<div className='bg-gray-900 text-white rounded-lg p-5 flex flex-col justify-between min-h-[120px] shadow-md shadow-gray-200'>
+					<div className='flex items-start justify-between'>
+						<span className='text-xs font-semibold uppercase tracking-wider text-gray-400'>
+							Số dư khả dụng
 						</span>
-						<span className='flex items-center gap-1 text-lg font-semibold text-green-600'>
-							<ArrowUpCircle size={16} />
-							{balanceLoading ? '...' : formatAmount(totalIncome)}
-						</span>
+						<div className='p-1.5 bg-gray-800 rounded text-gray-300'>
+                            <Wallet size={16} />
+                        </div>
 					</div>
-					<div className='flex flex-col items-center'>
-						<span className='flex items-center gap-1 text-xs text-gray-500 mb-1'>
-							<Receipt size={14} className='text-red-500' />
-							Chi tiêu
-						</span>
-						<span className='flex items-center gap-1 text-lg font-semibold text-red-500'>
-							<ArrowDownCircle size={16} />
-							{balanceLoading ? '...' : formatAmount(totalExpense)}
-						</span>
-					</div>
+					
+                    <div className='mt-2'>
+                        {balanceLoading ? (
+                            <div className="h-8 w-24 bg-gray-700 rounded animate-pulse"></div>
+                        ) : (
+                            <div className='flex items-baseline gap-1'>
+                                <span className='text-3xl font-mono font-bold tracking-tight'>
+                                    {formatAmount(currentBalance)}
+                                </span>
+                                <span className='text-sm font-medium text-gray-400'>đ</span>
+                            </div>
+                        )}
+                        {balanceError && <p className='text-xs text-red-400 mt-1'>Lỗi tải dữ liệu</p>}
+                    </div>
 				</div>
-				{balanceError && <div className='text-red-500 text-sm mt-4'>{balanceError}</div>}
+
+                {/* CARD 2: TỔNG THU (Light Card) */}
+				<div className='bg-white border border-gray-200 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:border-gray-300 transition-colors'>
+					<div className='flex items-start justify-between'>
+						<span className='text-xs font-semibold uppercase tracking-wider text-gray-500'>
+							Tổng thu nhập
+						</span>
+						{/* Icon xu hướng đi lên */}
+                        <div className='p-1.5 bg-green-50 rounded text-green-600 border border-green-100'>
+						    <TrendingUp size={16} />
+                        </div>
+					</div>
+                    
+                    <div className='mt-2'>
+                        {balanceLoading ? (
+                             <div className="h-8 w-24 bg-gray-100 rounded animate-pulse"></div>
+                        ) : (
+                            <div className='flex items-baseline gap-1'>
+                                <span className='text-2xl font-mono font-bold text-gray-900 tracking-tight'>
+                                    +{formatAmount(totalIncome)}
+                                </span>
+                                <span className='text-xs font-medium text-gray-400'>đ</span>
+                            </div>
+                        )}
+                    </div>
+				</div>
+
+                {/* CARD 3: TỔNG CHI (Light Card) */}
+				<div className='bg-white border border-gray-200 rounded-lg p-5 flex flex-col justify-between min-h-[120px] hover:border-gray-300 transition-colors'>
+					<div className='flex items-start justify-between'>
+						<span className='text-xs font-semibold uppercase tracking-wider text-gray-500'>
+							Tổng chi tiêu
+						</span>
+                        {/* Icon xu hướng đi xuống */}
+						<div className='p-1.5 bg-red-50 rounded text-red-600 border border-red-100'>
+                            <TrendingDown size={16} />
+                        </div>
+					</div>
+
+                    <div className='mt-2'>
+                        {balanceLoading ? (
+                             <div className="h-8 w-24 bg-gray-100 rounded animate-pulse"></div>
+                        ) : (
+                            <div className='flex items-baseline gap-1'>
+                                <span className='text-2xl font-mono font-bold text-gray-900 tracking-tight'>
+                                    -{formatAmount(totalExpense)}
+                                </span>
+                                <span className='text-xs font-medium text-gray-400'>đ</span>
+                            </div>
+                        )}
+                    </div>
+				</div>
 			</div>
 		</Section>
 	);
