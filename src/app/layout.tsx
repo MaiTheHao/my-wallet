@@ -8,27 +8,44 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang='vi'>
 			<head />
-			<body className='bg-gradient-to-br from-slate-50 to-slate-100 text-slate-700 font-sans min-h-screen'>
-				<header className='bg-white/80 backdrop-blur-sm border-b border-slate-200/50 py-6 shadow-sm'>
-					<div className='max-w-6xl mx-auto px-6 flex flex-col items-center gap-3'>
+			{/* BODY: Đổi sang nền xám rất nhẹ (gray-50) để làm nổi bật nội dung chính, text màu đen xám */}
+			<body className='bg-gray-50 text-gray-900 font-sans min-h-screen antialiased selection:bg-gray-900 selection:text-white'>
+				
+				{/* HEADER: Chuyển sang nền trắng tuyệt đối, border mảnh, layout dàn ngang (row) thay vì dọc để tiết kiệm diện tích màn hình */}
+				<header className='bg-white border-b border-gray-200 sticky top-0 z-10'>
+					<div className='max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between'>
+						
+						{/* Logo Area: Đơn giản, icon đen tuyền, chữ đậm */}
 						<div className='flex items-center gap-3'>
-							<NotebookPen className='w-8 h-8 text-blue-600' />
-							<h1 className='text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+							<div className="bg-gray-900 p-1.5 rounded text-white">
+								<NotebookPen className='w-5 h-5' strokeWidth={2} />
+							</div>
+							<h1 className='text-lg font-bold tracking-tight text-gray-900'>
 								Sổ Thu Chi
 							</h1>
 						</div>
-						<p className='text-slate-600 mt-1 px-6'>Ghi chép chi tiêu hàng ngày của bạn</p>
+
+						{/* Slogan: Thu gọn lại, màu xám nhạt, ẩn trên mobile để đỡ rối */}
+						<p className='text-sm text-gray-500 font-medium hidden sm:block'>
+							Quản lý tài chính cá nhân
+						</p>
 					</div>
 				</header>
-				<main className='min-h-[calc(100vh-140px)] py-10'>
-					<div className='max-w-6xl mx-auto px-0 md:px-4'>{children}</div>
+
+				{/* MAIN: Căn chỉnh lại padding, giới hạn độ rộng max-w-5xl để mắt người dùng tập trung hơn */}
+				<main className='min-h-[calc(100vh-130px)]'>
+					<div className='max-w-5xl mx-auto px-4 sm:px-6 py-8'>
+						{children}
+					</div>
 				</main>
-				<footer className='bg-white/80 backdrop-blur-sm border-t border-slate-200/50 py-6 text-center'>
-					<small className='text-slate-500'>
-						&copy; {new Date().getFullYear()} Sổ Thu Chi - Ghi chép chi tiêu đơn giản
+
+				{/* FOOTER: Tối giản, border trên mảnh */}
+				<footer className='bg-white border-t border-gray-200 py-6 text-center'>
+					<small className='text-xs font-medium text-gray-400 uppercase tracking-wider'>
+						&copy; {new Date().getFullYear()} Sổ Thu Chi
 					</small>
 				</footer>
 			</body>
 		</html>
 	);
-}
+					}
