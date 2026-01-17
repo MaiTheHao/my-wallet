@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Bot, MessageCircle } from 'lucide-react';
+import { Bot, ArrowUp, Sparkles } from 'lucide-react'; // Đổi icon send thành ArrowUp cho gọn
 import { Section } from './Section';
 import { useChat } from '@/hooks/useChat';
 import { useTransactionContext } from '@/context/transaction-context/useTransactionContext';
@@ -23,77 +23,93 @@ export const ChatInterface = React.memo(function ChatInterface() {
 
 	return (
 		<Section
-			icon={<Bot className='text-white' size={28} />}
-			title='Trợ Lý AI'
-			subtitle='Nhập giao dịch bằng ngôn ngữ tự nhiên'
+            // Icon màu đen, bỏ màu trắng cũ
+			icon={<Sparkles className='text-black' size={20} />} 
+			title='Trợ lý AI'
+			subtitle='Nhập giao dịch tự nhiên'
 			id='chat-interface'
-			className=''
+			className='' // Giữ nguyên props, Section sẽ handle layout ngoài
 		>
-			{/* Chat History */}
-			<div className='bg-slate-50/50 rounded-xl p-4 mb-6 max-h-80 overflow-y-auto space-y-3'>
+			{/* Chat History Area */}
+            {/* Chuyển nền sang trắng, viền xám mảnh, vuông vức hơn */}
+			<div className='bg-white border border-gray-200 rounded-lg p-4 mb-4 h-80 overflow-y-auto flex flex-col'>
 				{chatHistory.length === 0 ? (
-					<div className='text-center py-8 text-slate-400'>
-						<div className='w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-							<MessageCircle className='text-slate-400' size={32} />
-						</div>
-						<p className='text-lg font-medium'>Bắt đầu ghi chép thu chi</p>
-						<p className='text-sm'>
-							Ví dụ: "Mua cà phê 25k" (chi tiêu) hoặc "Nhận lương 10 triệu" (thu nhập)
-						</p>
+					<div className='flex flex-col items-center justify-center h-full text-gray-400 space-y-3'>
+                        {/* Empty State tối giản */}
+						<Bot strokeWidth={1.5} className='w-10 h-10 text-gray-300' />
+						<div className='text-center space-y-1'>
+                            <p className='text-sm font-medium text-gray-900'>Sẵn sàng ghi chép</p>
+                            <p className='text-xs text-gray-500'>
+                                "Cà phê 25k", "Lương 10tr", "Xăng 50k"
+                            </p>
+                        </div>
 					</div>
 				) : (
-					chatHistory.map((chat, index) => (
-						<div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-							<div
-								className={`max-w-[80%] px-3 py-2 md:px-4 md:py-3 rounded-lg md:rounded-xl ${
-									chat.error
-										? 'bg-red-100 border border-red-400 text-red-700'
-										: chat.type === 'user'
-										? 'bg-blue-500 text-white'
-										: 'bg-white border border-slate-200 text-slate-700'
-								}`}
-							>
-								<div className='whitespace-pre-wrap text-sm'>
-									{chat.error ? chat.error : chat.content}
+					<div className='space-y-4'>
+						{chatHistory.map((chat, index) => (
+							<div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+								<div
+									className={`max-w-[85%] px-4 py-2.5 text-sm rounded-lg ${
+										chat.error
+											? 'bg-white border border-red-500 text-red-600' // Error style: viền đỏ mảnh
+											: chat.type === 'user'
+											? 'bg-black text-white' // User style: Đen tuyền
+											: 'bg-gray-100 text-gray-900' // Bot style: Xám nhạt nền nã
+									}`}
+								>
+									<div className='whitespace-pre-wrap leading-relaxed'>
+										{chat.error ? chat.error : chat.content}
+									</div>
 								</div>
 							</div>
-						</div>
-					))
-				)}
-				{chatLoading && (
-					<div className='flex justify-start'>
-						<div className='bg-white border border-slate-200 px-4 py-3 rounded-xl'>
-							<div className='flex items-center gap-2'>
-								<div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce'></div>
-								<div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100'></div>
-								<div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200'></div>
+						))}
+                        {/* Loading Indicator Style tối giản */}
+						{chatLoading && (
+							<div className='flex justify-start'>
+								<div className='bg-gray-100 px-4 py-3 rounded-lg flex items-center gap-1.5'>
+									<div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse'></div>
+									<div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-75'></div>
+									<div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-150'></div>
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
 				)}
 			</div>
 
-			{/* Chat Input */}
-			<form onSubmit={handleSubmitChat} className='flex gap-3 pb-4 pl-2 pr-2 sm:pl-4 sm:pr-4'>
-				<input
-					className='flex-1 px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 text-slate-700'
-					value={message}
-					onChange={(e) => setMessage(e.target.value)}
-					placeholder='Nhập giao dịch...'
-					disabled={chatLoading}
-				/>
+			{/* Chat Input Area */}
+			<form onSubmit={handleSubmitChat} className='flex items-end gap-2'>
+				<div className='relative flex-1'>
+                    <input
+                        className='w-full pl-4 pr-4 py-3 bg-white border border-gray-300 rounded-lg 
+                                   focus:outline-none focus:border-black focus:ring-1 focus:ring-black 
+                                   transition-colors duration-200 text-gray-900 placeholder:text-gray-400 text-sm'
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder='Nhập giao dịch (ví dụ: Ăn trưa 30k)...'
+                        disabled={chatLoading}
+                    />
+                </div>
+				
+                {/* Button: Đen tuyền, vuông vức, hiệu ứng hover nhẹ */}
 				<button
 					type='submit'
-					className={`px-6 py-3 rounded-xl font-bold text-white transition-all duration-300 ${
+					className={`p-3 rounded-lg border border-transparent transition-all duration-200 flex-shrink-0 ${
 						chatLoading || !message.trim()
-							? 'bg-slate-400 cursor-not-allowed'
-							: 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+							? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+							: 'bg-black text-white hover:bg-gray-800 active:scale-95'
 					}`}
 					disabled={chatLoading || !message.trim()}
 				>
-					{chatLoading ? '...' : 'Gửi'}
+                    {/* Dùng icon ArrowUp thay vì chữ "Gửi" để tiết kiệm không gian và hiện đại hơn */}
+					{chatLoading ? (
+                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                        <ArrowUp className="w-5 h-5" strokeWidth={2.5} />
+                    )}
 				</button>
 			</form>
 		</Section>
 	);
 });
+					
