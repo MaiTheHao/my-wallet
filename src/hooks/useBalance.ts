@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TransactionApiService } from '@/lib/services/api/transaction-api.service';
-import { CLIENT_EVENTS } from '@/lib/const/events';
+import { showError } from '@/lib/utils/swal.config';
 
 type Balance = Record<string, number>;
 
@@ -22,14 +22,18 @@ export function useBalance(): UseBalanceResult {
 		try {
 			const res = await TransactionApiService.getBalance();
 			if (!res.success) {
-				setError(res.error || res.message || 'không thể lấy số dư');
+				const errorMsg = res.error || res.message || 'không thể lấy số dư';
+				setError(errorMsg);
 				setBalance(null);
+				await showError(errorMsg, 'Lỗi tải số dư');
 			} else {
 				setBalance(res.data ?? null);
 			}
 		} catch (err) {
-			setError((err as Error).message);
+			const errorMsg = (err as Error).message;
+			setError(errorMsg);
 			setBalance(null);
+			await showError(errorMsg, 'Lỗi kết nối');
 		} finally {
 			setLoading(false);
 		}

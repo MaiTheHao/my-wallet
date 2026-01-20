@@ -1,5 +1,6 @@
 export default {
-	transaction: 'transaction',
-	transactionBalance: 'balance',
+	transaction: 'transactions',
+	transactionBalance: 'balances',
+	transactionBatch: 'transactions/batch',
 	chat: 'chat',
 };

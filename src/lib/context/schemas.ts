@@ -1,43 +1,29 @@
-import { Type } from '@google/genai';
+import { Type, Schema } from '@google/genai';
 import { TransactionType, TransactionCategory } from '../models/transaction.model';
-import { Topics } from './topics';
 
-export const ADD_TRANSACTION_RESPONSE_JSON_SCHEMA = {
+export const UNIFIED_RESPONSE_SCHEMA: Schema = {
 	type: Type.OBJECT,
 	properties: {
-		amount: {
-			type: Type.INTEGER,
-			description: 'Số tiền giao dịch (đồng Việt Nam)',
+		is_transaction: {
+			type: Type.BOOLEAN,
+			description: 'True nếu là yêu cầu thêm thu/chi. False nếu là chat thường.',
 		},
-		description: {
-			type: Type.STRING,
-			description: 'Mô tả giao dịch chi tiết (Không cần thời gian vì mặc định là thời gian hiện tại)',
-		},
-		type: {
-			type: Type.STRING,
-			enum: Object.values(TransactionType),
-			description: 'Loại giao dịch: income (thu nhập) hoặc expense (chi tiêu)',
-		},
-		category: {
-			type: Type.STRING,
-			enum: Object.values(TransactionCategory),
-			description: 'Danh mục giao dịch',
-		},
-	},
-	required: ['amount', 'description', 'type'],
-};
-
-export const GET_TOPIC_RESPONSE_JSON_SCHEMA = {
-	type: Type.OBJECT,
-	properties: {
-		topic: {
-			type: Type.STRING,
-			enum: Object.values(Topics),
+		transaction: {
+			type: Type.OBJECT,
+			nullable: true,
+			properties: {
+				amount: { type: Type.INTEGER, description: 'VND' },
+				description: { type: Type.STRING, description: 'Nội dung' },
+				type: { type: Type.STRING, enum: Object.values(TransactionType) },
+				category: { type: Type.STRING, enum: Object.values(TransactionCategory) },
+			},
+			required: ['amount', 'description', 'type', 'category'],
 		},
 		reply: {
 			type: Type.STRING,
-			description: 'Phản hồi của AI nếu có, có thể là yêu cầu thêm thông tin hoặc xác nhận',
+			nullable: true,
+			description: 'Trả lời hội thoại nếu không phải giao dịch.',
 		},
 	},
-	required: ['topic', 'reply'],
+	required: ['is_transaction'],
 };

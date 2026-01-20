@@ -1,43 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer base {
-  :root {
-    --background: 255 255 255;
-    --foreground: 17 24 39; /* Gray 900 */
-  }
-
-  body {
-    @apply bg-gray-50 text-gray-900 antialiased;
-    /* Giúp font chữ hiển thị sắc nét hơn trên các trình duyệt */
-    -webkit-font-smoothing: antialiased; 
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-/* Tùy chỉnh thanh cuộn cho gọn, hợp style Minimal */
-@layer utilities {
-  /* Webkit browsers (Chrome, Safari) */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
-  }
-
-  /* Ẩn scrollbar nhưng vẫn cuộn được (cho các container nhỏ) */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+html {
+	scroll-behavior: smooth;
 }

@@ -7,6 +7,7 @@ export interface ITransactionContext {
 	loading: boolean;
 	fetchTransactions: (page?: number) => Promise<void>;
 	deleteTransaction: (id: string) => Promise<void>;
+	deleteBatch: (ids: string[]) => Promise<void>;
 }
 
 export const TransactionContext = React.createContext<ITransactionContext | undefined>(undefined);

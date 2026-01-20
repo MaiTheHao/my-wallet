@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Transaction, PaginationInfo } from '@/lib/types/transaction.types';
 import { TransactionApiService } from '@/lib/services/api/transaction-api.service';
 import { CLIENT_EVENTS } from '@/lib/const/events';
+import { confirmDelete, confirmDeleteBatch, showSuccess, showError } from '@/lib/utils/swal.config';
 
 export function useTransactions() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -38,12 +39,37 @@ export function useTransactions() {
 	};
 
 	const deleteTransaction = async (id: string) => {
-		if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
+		if (!(await confirmDelete('giao dịch'))) return;
+
 		try {
-			const result = await TransactionApiService.delete(id);
-			if (result.success) fetchTransactions(pagination.page);
+			const response = await TransactionApiService.delete(id);
+			if (response.success) {
+				await showSuccess('Giao dịch đã được xóa thành công.', 'Đã xóa!');
+				fetchTransactions(pagination.page);
+			} else {
+				await showError(response.message || 'Không thể xóa giao dịch.');
+			}
 		} catch (error) {
 			console.error('❌ Lỗi khi xóa giao dịch', error);
+			await showError('Đã xảy ra lỗi khi xóa giao dịch.');
+		}
+	};
+
+	const deleteBatch = async (ids: string[]) => {
+		if (ids.length === 0) return;
+		if (!(await confirmDeleteBatch(ids.length, 'giao dịch'))) return;
+
+		try {
+			const response = await TransactionApiService.deleteBatch(ids);
+			if (response.success) {
+				await showSuccess(`Đã xóa thành công ${response.data?.deletedCount || ids.length} giao dịch.`, 'Đã xóa!');
+				fetchTransactions(pagination.page);
+			} else {
+				await showError(response.message || 'Không thể xóa các giao dịch.');
+			}
+		} catch (error) {
+			console.error('❌ Lỗi khi xóa nhiều giao dịch', error);
+			await showError('Đã xảy ra lỗi khi xóa các giao dịch.');
 		}
 	};
 
@@ -57,5 +83,6 @@ export function useTransactions() {
 		loading,
 		fetchTransactions,
 		deleteTransaction,
+		deleteBatch,
 	};
 }

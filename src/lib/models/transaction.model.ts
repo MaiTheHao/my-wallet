@@ -10,6 +10,7 @@ export enum TransactionCategory {
 	DI_LAI = 'Đi lại',
 	DICH_VU = 'Dịch vụ',
 	GIAI_TRI = 'Giải trí',
+	CHAM_VO = 'Chăm vợ',
 	KHAC = 'Khác',
 }
 
@@ -18,10 +19,12 @@ const transactionSchema = new Schema(
 		amount: {
 			type: Number,
 			required: true,
+			min: 0,
 		},
 		description: {
 			type: String,
 			required: true,
+			trim: true,
 		},
 		type: {
 			type: String,
@@ -36,8 +39,11 @@ const transactionSchema = new Schema(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
+
+transactionSchema.index({ createdAt: -1 });
+transactionSchema.index({ type: 1 });
 
 export type TTransaction = InferSchemaType<typeof transactionSchema>;
 

@@ -40,6 +40,15 @@ export class TransactionApiService {
 		return res.json();
 	}
 
+	static async deleteBatch(ids: string[]): Promise<TResponseData<{ message: string; deletedCount?: number }>> {
+		const res = await fetch(`${API_BASE_URL}/${api.transactionBatch}`, {
+			method: 'DELETE',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ ids }),
+		});
+		return res.json();
+	}
+
 	static async getBalance(): Promise<TResponseData<Record<string, number>>> {
 		const res = await fetch(`${API_BASE_URL}/${api.transaction}/${api.transactionBalance}`);
 		return res.json();
