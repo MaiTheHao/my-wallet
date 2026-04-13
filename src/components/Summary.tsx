@@ -25,13 +25,12 @@ export function Summary() {
 			datasets: [
 				{
 					data: [totalIncome, totalExpense],
-					// Modern Palette: Emerald (Income) vs Rose (Expense)
 					backgroundColor: ['#10b981', '#f43f5e'],
 					hoverBackgroundColor: ['#059669', '#e11d48'],
 					borderWidth: 0,
-					hoverOffset: 15, // Tăng hiệu ứng hover pop-out
-					borderRadius: 4, // Bo nhẹ các segment
-					cutout: '82%', // Vòng tròn mỏng tinh tế
+					hoverOffset: 15,
+					borderRadius: 4,
+					cutout: '82%',
 				},
 			],
 		}),
@@ -43,7 +42,7 @@ export function Summary() {
 			responsive: true,
 			maintainAspectRatio: false,
 			plugins: {
-				legend: { display: false }, // Tắt legend mặc định để tự custom
+				legend: { display: false },
 				tooltip: {
 					backgroundColor: 'rgba(17, 24, 39, 0.95)',
 					padding: 14,
@@ -66,7 +65,6 @@ export function Summary() {
 		[],
 	);
 
-	// Tính tỷ lệ tiết kiệm
 	const savingRate = totalIncome > 0 ? ((currentBalance / totalIncome) * 100).toFixed(1) : 0;
 	const isPositive = currentBalance >= 0;
 
@@ -76,7 +74,6 @@ export function Summary() {
 			subtitle='Báo cáo hiệu suất dòng tiền'
 			id='summary'
 			icon={<Activity size={20} className='text-gray-900' />}
-			// Thêm min-height để lấp đầy khoảng trống khi bỏ 3 card cũ
 			className='min-h-[420px] flex flex-col justify-center'
 		>
 			{balanceLoading ? (
@@ -94,13 +91,10 @@ export function Summary() {
 				</div>
 			) : (
 				<div className='grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center w-full px-2 md:px-6 py-4'>
-					{/* LEFT COLUMN: THE CHART */}
 					<div className='relative flex flex-col items-center justify-center order-1 lg:order-1'>
-						{/* Chart Container */}
 						<div className='w-[260px] h-[260px] md:w-[320px] md:h-[320px] relative z-10'>
 							<Doughnut data={chartData} options={chartOptions as any} />
 
-							{/* Central Balance Info */}
 							<div className='absolute inset-0 flex flex-col items-center justify-center pointer-events-none animate-in fade-in duration-700'>
 								<span className='text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest mb-1'>Số dư thực</span>
 								<span className={`text-2xl md:text-4xl font-black tracking-tighter font-mono ${isPositive ? 'text-gray-900' : 'text-red-500'}`}>
@@ -111,11 +105,8 @@ export function Summary() {
 						</div>
 					</div>
 
-					{/* RIGHT COLUMN: DETAILED BREAKDOWN */}
 					<div className='flex flex-col justify-center space-y-8 order-2 lg:order-2'>
-						{/* Stats List */}
 						<div className='space-y-4'>
-							{/* Income Row */}
 							<div className='group flex items-center justify-between p-4 md:p-5 bg-gray-50 rounded-2xl border border-gray-100 transition-all duration-300 hover:bg-white hover:shadow-lg hover:shadow-green-100 hover:border-green-100'>
 								<div className='flex items-center gap-4'>
 									<div className='w-12 h-12 rounded-xl bg-white flex items-center justify-center text-green-500 shadow-sm border border-gray-50 group-hover:scale-110 transition-transform'>
@@ -129,7 +120,6 @@ export function Summary() {
 								<span className='text-xl md:text-2xl font-bold text-green-600 font-mono tracking-tight'>+{formatAmount(totalIncome)}</span>
 							</div>
 
-							{/* Expense Row */}
 							<div className='group flex items-center justify-between p-4 md:p-5 bg-gray-50 rounded-2xl border border-gray-100 transition-all duration-300 hover:bg-white hover:shadow-lg hover:shadow-red-100 hover:border-red-100'>
 								<div className='flex items-center gap-4'>
 									<div className='w-12 h-12 rounded-xl bg-white flex items-center justify-center text-red-500 shadow-sm border border-gray-50 group-hover:scale-110 transition-transform'>
@@ -144,9 +134,7 @@ export function Summary() {
 							</div>
 						</div>
 
-						{/* Insight Block */}
 						<div className='relative pl-5 py-2'>
-							{/* Decorative vertical line */}
 							<div className={`absolute left-0 top-0 bottom-0 w-1 rounded-full ${isPositive ? 'bg-black' : 'bg-red-500'}`} />
 
 							<div className='flex items-center justify-between mb-2'>

@@ -1,45 +1,23 @@
-/**
- * App configuration for My Wallet.
- *
- * - api.baseUrl: Uses NEXT_PUBLIC_API_BASE_URL in production, or localhost in development.
- * - api.getFullApiUrl(): Returns the full API endpoint (baseUrl + prefix + version).
- * - google_ai_studio.apiKey: Reads from GOOGLE_AI_STUDIO_API_KEY environment variable.
- * - google_ai_studio.model: Default is 'gemini-2.5-flash', change as needed.
- * - google_ai_studio.basePrompt: Prompt for AI assistant (Vietnamese, customizable).
- *
- * Usage:
- *   import appConfig from './src/app.config';
- *   const apiUrl = appConfig.api.getFullApiUrl();
- */
+
 
 const isDev = process.env.NODE_ENV === 'development';
 
 const appConfig = {
 	api: {
-		// Base URL for API requests
 		baseUrl: isDev ? 'http://localhost:3000/' : process.env.NEXT_PUBLIC_API_BASE_URL,
-		// API prefix and version
 		prefix: '/api',
 		ver: '/v1',
-		/**
-		 * Returns the full API URL (baseUrl + prefix + version)
-		 * Throws error if baseUrl is not valid (must start with http:// or https://)
-		 */
 		getFullApiUrl() {
 			const url = `${this.baseUrl}${this.prefix}${this.ver}`.replace(/([^:]\/)\/+/g, '$1');
 			if (!/^https?:\/\//i.test(url))
 				throw new Error('Invalid base URL format at app.config.ts - It must start with http:// or https://');
 			return url;
 		},
-		// Request timeout (ms)
 		timeout: isDev ? 10000 : 5000,
 	},
 	google_ai_studio: {
-		// API key for Google AI Studio
 		apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY || '',
-		// AI model name (default: gemini-2.5-flash-lite)
-		model: 'gemini-2.5-flash-lite',
-		// Base prompt for AI assistant (Vietnamese, can be customized)
+		model: process.env.GOOGLE_AI_MODEL || 'gemini-flash-lite-latest',
 		basePrompt: [
 			'🌟 Bạn là Sổ Tay Chi Tiêu Thông Minh của tôi! 🌟',
 			'Ngôn ngữ: tiếng Việt 🇻🇳',

@@ -4,19 +4,22 @@ import { Summary } from '@/components/Summary';
 import { TransactionTable } from '@/components/TransactionTable';
 import { TransactionContextProvider } from '@/context/transaction-context/TransactionContextProvider';
 import { BalanceContextProvider } from '@/context/balance-context/BalanceContextProvider';
+import { FilterContextProvider } from '@/context/filter-context/FilterContextProvider';
 import QuickMoveModal from '@/components/QuickMoveModal';
 
 function Page() {
 	return (
 		<div className='max-w-6xl mx-auto space-y-8 relative'>
-			<BalanceContextProvider>
-				<TransactionContextProvider>
-					<ChatInterface />
-					<Summary />
-					<TransactionTable />
-				</TransactionContextProvider>
-			</BalanceContextProvider>
-			<QuickMoveModal />
+			<FilterContextProvider>
+				<BalanceContextProvider>
+					<TransactionContextProvider>
+						<ChatInterface />
+						<Summary />
+						<TransactionTable />
+						<QuickMoveModal />
+					</TransactionContextProvider>
+				</BalanceContextProvider>
+			</FilterContextProvider>
 		</div>
 	);
 }

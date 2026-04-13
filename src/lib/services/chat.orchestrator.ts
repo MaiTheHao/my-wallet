@@ -3,20 +3,13 @@ import { TransactionService } from './transaction.service';
 import { ErrorFirst } from '@/lib/types/error-first.type';
 import { TTransaction } from '@/lib/models/transaction.model';
 
-export class MessageService {
-	private static instance: MessageService | null = null;
+export class ChatOrchestrator {
+	constructor(
+		private readonly aiService: AIService,
+		private readonly transactionService: TransactionService
+	) {}
 
-	private readonly aiService = AIService.getInstance();
-	private readonly transactionService = TransactionService.getInstance();
-
-	private constructor() {}
-
-	public static getInstance(): MessageService {
-		if (!MessageService.instance) MessageService.instance = new MessageService();
-		return MessageService.instance;
-	}
-
-	async processMessage(prompt: string, options?: any): Promise<ErrorFirst<string>> {
+	async processChat(prompt: string, options?: any): Promise<ErrorFirst<string>> {
 		try {
 			const [aiError, result] = await this.aiService.analyzeRequest(prompt, options);
 
@@ -24,7 +17,7 @@ export class MessageService {
 			if (!result) return [new Error('Không xử lý được yêu cầu.'), null];
 
 			if (result.is_transaction && result.transaction) {
-				return await this.handleTransaction(result.transaction);
+				return await this.handleTransaction(result.transaction as TTransaction);
 			} else {
 				return [null, result.reply || 'Xin lỗi, tôi không hiểu ý bạn.'];
 			}

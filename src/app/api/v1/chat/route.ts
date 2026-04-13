@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
-import { MessageService } from '@/lib/services/message.service';
+import { ChatOrchestrator } from '@/lib/services/chat.orchestrator';
+import { AIService } from '@/lib/services/ai.service';
+import { TransactionService } from '@/lib/services/transaction.service';
 import { ResponseService } from '@/lib/services/response.service';
 
 export async function POST(req: NextRequest) {
@@ -7,8 +9,11 @@ export async function POST(req: NextRequest) {
 		const body = await req.json();
 		const message = body.message;
 
-		const messageService = MessageService.getInstance();
-		const [error, reply] = await messageService.processMessage(message);
+		const aiService = AIService.getInstance();
+		const transactionService = TransactionService.getInstance();
+		const chatOrchestrator = new ChatOrchestrator(aiService, transactionService);
+
+		const [error, reply] = await chatOrchestrator.processChat(message);
 
 		if (error) {
 			return ResponseService.internalError(error.message);

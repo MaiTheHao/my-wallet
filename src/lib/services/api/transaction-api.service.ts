@@ -6,9 +6,18 @@ import { TResponseData } from '@/lib/types/response.type';
 
 const API_BASE_URL = appConfig.api.getFullApiUrl();
 
+export interface TransactionFilter {
+	timeRange?: string;
+	search?: string;
+}
+
 export class TransactionApiService {
-	static async getList(page = 1, limit = 10): Promise<TResponseData<PaginateResult<Transaction>>> {
-		const res = await fetch(`${API_BASE_URL}/${api.transaction}?page=${page}&limit=${limit}`);
+	static async getList(page = 1, limit = 10, filter?: TransactionFilter): Promise<TResponseData<PaginateResult<Transaction>>> {
+		let url = `${API_BASE_URL}/${api.transaction}?page=${page}&limit=${limit}`;
+		if (filter?.timeRange) url += `&timeRange=${filter.timeRange}`;
+		if (filter?.search) url += `&search=${encodeURIComponent(filter.search)}`;
+		
+		const res = await fetch(url);
 		return res.json();
 	}
 
@@ -49,8 +58,17 @@ export class TransactionApiService {
 		return res.json();
 	}
 
-	static async getBalance(): Promise<TResponseData<Record<string, number>>> {
-		const res = await fetch(`${API_BASE_URL}/${api.transaction}/${api.transactionBalance}`);
+	static async getBalance(filter?: TransactionFilter): Promise<TResponseData<Record<string, number>>> {
+		let url = `${API_BASE_URL}/${api.transaction}/${api.transactionBalance}`;
+		const query: string[] = [];
+		if (filter?.timeRange) query.push(`timeRange=${filter.timeRange}`);
+		if (filter?.search) query.push(`search=${encodeURIComponent(filter.search)}`);
+		
+		if (query.length > 0) {
+			url += `?${query.join('&')}`;
+		}
+		
+		const res = await fetch(url);
 		return res.json();
 	}
 }

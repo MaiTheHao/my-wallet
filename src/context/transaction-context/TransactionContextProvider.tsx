@@ -4,6 +4,7 @@ import { TransactionContext } from './TransactionContext';
 import { Transaction, PaginationInfo } from '@/lib/types/transaction.types';
 import { TransactionApiService } from '@/lib/services/api/transaction-api.service';
 import { showSuccess, showError } from '@/lib/utils/swal.config';
+import { useFilterContext } from '@/context/filter-context/useFilterContext';
 
 export function TransactionContextProvider({ children }: { children: React.ReactNode }) {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -14,12 +15,13 @@ export function TransactionContextProvider({ children }: { children: React.React
 		totalPages: 0,
 	});
 	const [loading, setLoading] = useState(false);
+	const { timeRange, search } = useFilterContext();
 
 	const fetchTransactions = useCallback(
 		async (page = 1) => {
 			setLoading(true);
 			try {
-				const result = await TransactionApiService.getList(page, pagination.limit);
+				const result = await TransactionApiService.getList(page, pagination.limit, { timeRange, search });
 				if (result.success && result.data) {
 					setTransactions(result.data.data);
 					setPagination({
@@ -37,7 +39,7 @@ export function TransactionContextProvider({ children }: { children: React.React
 			}
 			setLoading(false);
 		},
-		[pagination.limit],
+		[pagination.limit, timeRange, search],
 	);
 
 	const deleteTransaction = useCallback(

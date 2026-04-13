@@ -17,7 +17,6 @@ export class TransactionService {
 		return TransactionService.instance;
 	}
 
-	// --- CRUD Operations ---
 
 	async create(data: Omit<TTransaction, '_id' | 'createdAt' | 'updatedAt'>): Promise<ErrorFirst<TTransaction>> {
 		return this.executeSafely(async () => {
@@ -56,7 +55,6 @@ export class TransactionService {
 		});
 	}
 
-	// --- Aggregation & List Operations ---
 
 	async getList(filter: Partial<TTransaction> = {}, page = 1, limit = 10, sort?: Record<string, 1 | -1>): Promise<ErrorFirst<PaginateResult<TTransaction>>> {
 		return this.executeSafely(async () => {
@@ -72,9 +70,9 @@ export class TransactionService {
 		});
 	}
 
-	async getBalance(): Promise<ErrorFirst<Record<TransactionType, number>>> {
+	async getBalance(filter: Partial<TTransaction> = {}): Promise<ErrorFirst<Record<TransactionType, number>>> {
 		return this.executeSafely(async () => {
-			const stats = await this.transactionRepo.getBalanceStats();
+			const stats = await this.transactionRepo.getBalanceStats(filter as any);
 
 			const balance = {
 				[TransactionType.INCOME]: 0,
@@ -90,7 +88,6 @@ export class TransactionService {
 		});
 	}
 
-	// --- Private Helpers ---
 
 	private async executeSafely<T>(operation: () => Promise<T>): Promise<ErrorFirst<T>> {
 		try {

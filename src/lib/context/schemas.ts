@@ -1,4 +1,5 @@
 import { Type, Schema } from '@google/genai';
+import { z } from 'zod';
 import { TransactionType, TransactionCategory } from '../models/transaction.model';
 
 export const UNIFIED_RESPONSE_SCHEMA: Schema = {
@@ -27,3 +28,14 @@ export const UNIFIED_RESPONSE_SCHEMA: Schema = {
 	},
 	required: ['is_transaction'],
 };
+
+export const zAIAnalysisResult = z.object({
+	is_transaction: z.boolean(),
+	transaction: z.object({
+		amount: z.number(),
+		description: z.string(),
+		type: z.enum(TransactionType),
+		category: z.enum(TransactionCategory),
+	}).nullable().optional(),
+	reply: z.string().nullable().optional(),
+});
