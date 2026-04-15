@@ -8,6 +8,10 @@ dayjs.extend(isoWeek);
 
 const transactionService = TransactionService.getInstance();
 
+export async function OPTIONS() {
+  return ResponseService.success({});
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug?: string[] }> },
@@ -38,6 +42,12 @@ export async function GET(
     const [error, balance] = await transactionService.getBalance(filter);
     if (error) return ResponseService.badRequest(error.message);
     return ResponseService.success(balance);
+  }
+
+  if (slug && slug[0] === 'categories') {
+    const [error, stats] = await transactionService.getCategoryStats(filter);
+    if (error) return ResponseService.badRequest(error.message);
+    return ResponseService.success(stats);
   }
 
   const page = parseInt(searchParams.get('page') || '1');

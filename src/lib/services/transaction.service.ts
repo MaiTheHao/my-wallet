@@ -88,6 +88,19 @@ export class TransactionService {
 		});
 	}
 
+	async getCategoryStats(filter: Partial<TTransaction> = {}): Promise<ErrorFirst<Record<string, number>>> {
+		return this.executeSafely(async () => {
+			const stats = await this.transactionRepo.getCategoryStats(filter as any);
+
+			const result: Record<string, number> = {};
+			stats.forEach((stat: { _id: string; total: number }) => {
+				result[stat._id] = stat.total;
+			});
+
+			return result;
+		});
+	}
+
 
 	private async executeSafely<T>(operation: () => Promise<T>): Promise<ErrorFirst<T>> {
 		try {

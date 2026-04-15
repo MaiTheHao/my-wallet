@@ -82,6 +82,28 @@ export class TransactionRepository {
     return stats;
   }
 
+  async getCategoryStats(filter?: FilterQuery<TTransaction>) {
+    await this.connectToDatabase();
+
+    const stats = await Transaction.aggregate([
+      { 
+        $match: { 
+          ...(filter || {}), 
+          type: 'expense' 
+        } 
+      },
+      {
+        $group: {
+          _id: '$category',
+          total: { $sum: '$amount' },
+        },
+      },
+      { $sort: { total: -1 } }
+    ]);
+
+    return stats;
+  }
+
   private async connectToDatabase() {
     try {
       await dbConnect();

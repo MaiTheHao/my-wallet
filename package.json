@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.12.0",
+    "@tanstack/react-table": "^8.21.3",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.20",
     "lucide-react": "^0.536.0",

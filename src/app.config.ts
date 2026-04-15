@@ -4,11 +4,12 @@ const isDev = process.env.NODE_ENV === 'development';
 
 const appConfig = {
 	api: {
-		baseUrl: isDev ? 'http://localhost:3000/' : process.env.NEXT_PUBLIC_API_BASE_URL,
+		baseUrl: isDev ? 'http://localhost:3000/' : (process.env.NEXT_PUBLIC_API_BASE_URL || ''),
 		prefix: '/api',
 		ver: '/v1',
 		getFullApiUrl() {
 			const url = `${this.baseUrl}${this.prefix}${this.ver}`.replace(/([^:]\/)\/+/g, '$1');
+			if (url.startsWith('/')) return url;
 			if (!/^https?:\/\//i.test(url))
 				throw new Error('Invalid base URL format at app.config.ts - It must start with http:// or https://');
 			return url;

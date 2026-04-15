@@ -15,6 +15,18 @@ export enum TransactionCategory {
   GIAO_DUC = 'Giáo dục',
   TIEN_LUONG = 'Tiền lương',
   CHAM_VO = 'Chăm vợ',
+  TIEN_NHA = 'Tiền nhà',
+  DIEN_NUOC = 'Điện nước',
+  INTERNET = 'Internet',
+  XANG_XE = 'Xăng xe',
+  BAO_HIEM = 'Bảo hiểm',
+  DAU_TU = 'Đầu tư',
+  TRA_NO = 'Trả nợ',
+  CHO_VAY = 'Cho vay',
+  BI_EU_TANG = 'Biếu tặng',
+  THUONG = 'Thưởng',
+  LAI_SUAT = 'Lãi suất',
+  LAM_DEP = 'Làm đẹp',
   KHAC = 'Khác',
 }
 

@@ -4,6 +4,10 @@ import { AIService } from '@/lib/services/ai.service';
 import { TransactionService } from '@/lib/services/transaction.service';
 import { ResponseService } from '@/lib/services/response.service';
 
+export async function OPTIONS() {
+	return ResponseService.success({});
+}
+
 export async function POST(req: NextRequest) {
 	try {
 		const body = await req.json();

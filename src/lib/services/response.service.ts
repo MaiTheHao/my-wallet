@@ -3,6 +3,14 @@ import { TResponseData } from '../types/response.type';
 import { NextResponse } from 'next/server';
 
 export class ResponseService {
+	private static getCorsHeaders() {
+		return {
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+			'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+		};
+	}
+
 	static json<T>(
 		data: TResponseData<T>,
 		status: HTTPSTATUS = HTTPSTATUS.OK,
@@ -10,7 +18,10 @@ export class ResponseService {
 	) {
 		return new NextResponse(JSON.stringify(data), {
 			status,
-			headers,
+			headers: {
+				...this.getCorsHeaders(),
+				...headers,
+			},
 		});
 	}
 

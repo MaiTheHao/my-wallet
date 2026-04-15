@@ -63,11 +63,25 @@ export class TransactionApiService {
 		const query: string[] = [];
 		if (filter?.timeRange) query.push(`timeRange=${filter.timeRange}`);
 		if (filter?.search) query.push(`search=${encodeURIComponent(filter.search)}`);
-		
+
 		if (query.length > 0) {
 			url += `?${query.join('&')}`;
 		}
-		
+
+		const res = await fetch(url);
+		return res.json();
+	}
+
+	static async getCategoryStats(filter?: TransactionFilter): Promise<TResponseData<Record<string, number>>> {
+		let url = `${API_BASE_URL}/${api.transaction}/${api.transactionCategories}`;
+		const query: string[] = [];
+		if (filter?.timeRange) query.push(`timeRange=${filter.timeRange}`);
+		if (filter?.search) query.push(`search=${encodeURIComponent(filter.search)}`);
+
+		if (query.length > 0) {
+			url += `?${query.join('&')}`;
+		}
+
 		const res = await fetch(url);
 		return res.json();
 	}
