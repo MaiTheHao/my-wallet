@@ -27,6 +27,7 @@ export enum TransactionCategory {
   THUONG = 'Thưởng',
   LAI_SUAT = 'Lãi suất',
   LAM_DEP = 'Làm đẹp',
+  TINH_CHINH = 'Tinh chỉnh',
   KHAC = 'Khác',
 }
 
